@@ -53,8 +53,6 @@ print(testClaims)
 print(testClaims[0].coordinates())
 print(testClaims[0].coordinates().count)
 
-
-
 func computeOverlaps(claims: [Claim], size: Int) -> Rect<Int> {
     var fabric = Rect(width: size, height: size, defaultValue: 0)
 
@@ -91,7 +89,7 @@ print(findNonOverlap(claims: testClaims, fabric: testFabric))
 
 let url = Bundle.main.url(forResource: "day3.input", withExtension: "txt")!
 let lines = try! String(contentsOf: url).components(separatedBy: "\n")
-let day3claims = lines.compactMap{ Claim(line: $0) }
+let day3claims = lines.compactMap g{ Claim(line: $0) }
 
 let day3Fabric = computeOverlaps(claims: day3claims, size: 1000)
 print(countOverlaps(fabric: day3Fabric))
