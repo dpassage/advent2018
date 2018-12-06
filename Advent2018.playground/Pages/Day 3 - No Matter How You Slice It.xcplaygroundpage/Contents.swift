@@ -53,33 +53,7 @@ print(testClaims)
 print(testClaims[0].coordinates())
 print(testClaims[0].coordinates().count)
 
-struct Rect<Element> {
-    var storage: [Element]
-    var width: Int
-    var height: Int
 
-    init(width: Int, height: Int, defaultValue: Element) {
-        storage = Array<Element>(repeating: defaultValue, count: width * height)
-        self.width = width
-        self.height = height
-    }
-
-    private func index(x: Int, y: Int) -> Int? {
-        guard x < width, y < height else { return nil }
-        return (y * width) + x
-    }
-
-    subscript(x: Int, y: Int) -> Element {
-        get {
-            guard let index = index(x: x, y: y) else { fatalError("out of range") }
-            return storage[index]
-        }
-        set {
-            guard let index = index(x: x, y: y) else { fatalError("out of range") }
-            storage[index] = newValue
-        }
-    }
-}
 
 func computeOverlaps(claims: [Claim], size: Int) -> Rect<Int> {
     var fabric = Rect(width: size, height: size, defaultValue: 0)
@@ -93,7 +67,9 @@ func computeOverlaps(claims: [Claim], size: Int) -> Rect<Int> {
 }
 
 func countOverlaps(fabric: Rect<Int>) -> Int {
-    return fabric.storage.filter { $0 >= 2 }.count
+    return fabric.reduce(0, { (soFar, element) -> Int in
+        return soFar + (element >= 2 ? 1 : 0)
+    })
 }
 
 extension Claim {
