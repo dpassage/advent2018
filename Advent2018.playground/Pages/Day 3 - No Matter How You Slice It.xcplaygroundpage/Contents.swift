@@ -81,7 +81,7 @@ struct Rect<Element> {
     }
 }
 
-func countOverlaps(claims: [Claim], size: Int) -> Int {
+func computeOverlaps(claims: [Claim], size: Int) -> Rect<Int> {
     var fabric = Rect(width: size, height: size, defaultValue: 0)
 
     for claim in claims {
@@ -89,16 +89,36 @@ func countOverlaps(claims: [Claim], size: Int) -> Int {
             fabric[coord.x, coord.y] += 1
         }
     }
-
-    return fabric.storage.filter { $0 >= 2}.count
+    return fabric
 }
 
-print(countOverlaps(claims: testClaims, size: 10))
+func countOverlaps(fabric: Rect<Int>) -> Int {
+    return fabric.storage.filter { $0 >= 2 }.count
+}
+
+extension Claim {
+    func hasNoOverlap(fabric: Rect<Int>) -> Bool {
+        for coordinate in coordinates() {
+            if fabric[coordinate.x, coordinate.y] >= 2 { return false }
+        }
+        return true
+    }
+}
+
+func findNonOverlap(claims: [Claim], fabric: Rect<Int>) -> [Int] {
+    return claims.filter { $0.hasNoOverlap(fabric: fabric) }.map { $0.id }
+}
+
+let testFabric = computeOverlaps(claims: testClaims, size: 10)
+print(countOverlaps(fabric: testFabric))
+print(findNonOverlap(claims: testClaims, fabric: testFabric))
 
 let url = Bundle.main.url(forResource: "day3.input", withExtension: "txt")!
 let lines = try! String(contentsOf: url).components(separatedBy: "\n")
 let day3claims = lines.compactMap{ Claim(line: $0) }
 
-print(countOverlaps(claims: day3claims, size: 1000))
+let day3Fabric = computeOverlaps(claims: day3claims, size: 1000)
+print(countOverlaps(fabric: day3Fabric))
+print(findNonOverlap(claims: day3claims, fabric: day3Fabric))
 
 //: [Next](@next)
