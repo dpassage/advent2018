@@ -1,6 +1,7 @@
 //: [Previous](@previous)
 
 import Foundation
+import AdventLib
 
 // Part 1
 
@@ -89,7 +90,7 @@ print(findNonOverlap(claims: testClaims, fabric: testFabric))
 
 let url = Bundle.main.url(forResource: "day3.input", withExtension: "txt")!
 let lines = try! String(contentsOf: url).components(separatedBy: "\n")
-let day3claims = lines.compactMap g{ Claim(line: $0) }
+let day3claims = lines.compactMap { Claim(line: $0) }
 
 let day3Fabric = computeOverlaps(claims: day3claims, size: 1000)
 print(countOverlaps(fabric: day3Fabric))

@@ -1,6 +1,7 @@
 //: [Previous](@previous)
 
 import Foundation
+import AdventLib
 
 let testInput = """
 [1518-11-01 00:00] Guard #10 begins shift
