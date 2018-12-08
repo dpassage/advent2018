@@ -45,35 +45,45 @@ public func findLargestArea(coordinates: [Coordinate]) -> Int {
     let maxX = coordinates.map { $0.x }.max()!
     let maxY = coordinates.map { $0.y }.max()!
 
-    // our origin is at (minX, miny)
-    let origin = Coordinate(x: minX, y: minY)
-    // and the size is the difference
-    let width = (maxX - minX) + 1
-    let height = (maxY - minY) + 1
+    // we want to leave a 1-cell gap around the edge
+    // so the origin is 1 cell above and to the left
+    let origin = Coordinate(x: minX - 1, y: minY - 1)
+    // and the size is the difference, plus two
+    let width = (maxX - minX) + 2
+    let height = (maxY - minY) + 2
 
+    // fill with -1
     var grid = Rect<Int>(width: width, height: height, defaultValue: -1)
 
-    // filter out the ones at the edges; these would have infinite extents
-    let edgeCoords = coordinates.enumerated().filter { (offset, coordinate) -> Bool in
-        return coordinate.x == minX || coordinate.x == maxX || coordinate.y == minY || coordinate.y == maxY
+    // cells on the edge are special; the closet point to them would have
+    // infinite extent, and so get bucketed out.
+    var edgeRegionOffsets: Set<Int> = []
+
+    func nearestRegion(to normalized: Coordinate) -> Int? {
+        let distances = (coordinates.enumerated().map { (offset: $0.offset, distance: $0.element.distance(to: normalized)) })
+
+        let sortedDistances = distances.sorted { $0.distance < $1.distance }
+        if sortedDistances.count > 1 && sortedDistances[0].distance == sortedDistances[1].distance {
+            return nil
+        }
+        return sortedDistances[0].offset
     }
 
-    print("edgeCoords: \(edgeCoords)")
-
-    let edgeCoordOffsets = edgeCoords.map { $0.offset }
+    // first we find the edge regions
+    // top and bottom edges
     // fill in the grid
     for x in 0..<grid.width {
         print(x)
         for y in 0..<grid.height {
             let normalized = Coordinate(x: x, y: y) + origin
-
-            let distances = (coordinates.enumerated().map { (offset: $0.offset, distance: $0.element.distance(to: normalized)) })
-
-            let sortedDistances = distances.sorted { $0.distance < $1.distance }
-            if sortedDistances.count > 1 && sortedDistances[0].distance == sortedDistances[1].distance {
-                continue
+            if let nearest = nearestRegion(to: normalized) {
+                // if it's an edge cell, update the edge list
+                if x == 0 || x == (width - 1) || y == 0 || y == (height - 1) {
+                    edgeRegionOffsets.insert(nearest)
+                } else {
+                    grid[x, y] = nearest
+                }
             }
-            grid[x, y] = sortedDistances[0].offset
         }
     }
 
@@ -84,12 +94,10 @@ public func findLargestArea(coordinates: [Coordinate]) -> Int {
         for y in 0..<grid.width {
             let offset = grid[x, y]
             if offset == -1 { continue }
-            if edgeCoordOffsets.contains(offset) { continue }
+            if edgeRegionOffsets.contains(offset) { continue }
             counts[offset, default: 0] += 1
         }
     }
-
-    print(grid)
     print(counts)
     return counts.values.sorted { $0 > $1 }.first!
 }

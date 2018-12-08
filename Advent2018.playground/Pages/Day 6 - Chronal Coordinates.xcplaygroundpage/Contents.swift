@@ -12,10 +12,7 @@ let testInputLines = """
 8, 9
 """.components(separatedBy: "\n")
 
-
 let testCoordinates = testInputLines.compactMap(Coordinate.init)
-
-
 
 print(findLargestArea(coordinates: testCoordinates))
 
