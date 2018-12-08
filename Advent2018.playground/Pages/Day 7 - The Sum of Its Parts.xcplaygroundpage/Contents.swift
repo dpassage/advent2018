@@ -14,16 +14,16 @@ Step F must be finished before step E can begin.
 """.components(separatedBy: "\n")
 
 struct Rule {
-    var from: String
-    var to: String
+    var from: Char
+    var to: Char
 }
 
 extension Rule {
     init?(line: String) {
         let regex = try! Regex(pattern: "Step ([A-Z]) must be finished before step ([A-Z]) can begin\\.")
         guard let matches = regex.match(input: line), matches.count == 2 else { return nil }
-        from = matches[0]
-        to = matches[1]
+        from = matches[0].chars.first!
+        to = matches[1].chars.first!
     }
 }
 
@@ -31,8 +31,8 @@ let testRules = testInput.compactMap(Rule.init)
 print(testRules)
 
 struct Node {
-    var name: String
-    var requires: Set<String>
+    var name: Char
+    var requires: Set<Char>
 }
 
 extension Node: CustomStringConvertible {
@@ -43,8 +43,8 @@ extension Node: CustomStringConvertible {
 
 func build(rules: [Rule]) -> String {
 
-    var nodeSet: [String: Node] = [:]
-    var allSteps: Set<String> = []
+    var nodeSet: [Char: Node] = [:]
+    var allSteps: Set<Char> = []
     for rule in rules {
         allSteps.insert(rule.from)
         allSteps.insert(rule.to)
@@ -61,12 +61,12 @@ func build(rules: [Rule]) -> String {
     let remainingSteps = allSteps.subtracting(nodeSet.keys)
     print("remainingSteps: \(remainingSteps)")
 
-    var availableSteps = Heap<String>(priorityFunction: <)
+    var availableSteps = Heap<Char>(priorityFunction: <)
     for step in remainingSteps {
         availableSteps.enqueue(step)
     }
 
-    var stepsTaken = [String]()
+    var stepsTaken = [Char]()
 
     while let nextStep = availableSteps.dequeue() {
         stepsTaken.append(nextStep)
@@ -79,7 +79,7 @@ func build(rules: [Rule]) -> String {
         }
     }
 
-    return stepsTaken.joined()
+    return String(stepsTaken)
 }
 
 print(build(rules: testRules))
@@ -90,5 +90,97 @@ let day7rules = day7lines.compactMap(Rule.init)
 
 print(build(rules: day7rules))
 
+// Part 2
 
+struct Worker {
+    var currentStep: Char?
+    var secondsLeft: Int
+
+    var isBusy: Bool { return currentStep != nil }
+    mutating func work() { secondsLeft -= 1 }
+    var isDone: Bool { return secondsLeft <= 0 }
+}
+
+extension Worker: CustomStringConvertible {
+    var description: String {
+        if let currentStep = currentStep {
+            return "\(currentStep): \(secondsLeft) remaining"
+        } else {
+            return "idle"
+        }
+    }
+}
+
+func hardBuild(rules: [Rule], workers workerCount: Int, minSecs: Int) -> Int {
+    var time = 0
+
+    var nodeSet: [Char: Node] = [:]
+    var allSteps: Set<Char> = []
+    for rule in rules {
+        allSteps.insert(rule.from)
+        allSteps.insert(rule.to)
+
+        if nodeSet.keys.contains(rule.to) {
+            nodeSet[rule.to]?.requires.insert(rule.from)
+        } else {
+            nodeSet[rule.to] = Node(name: rule.to, requires: [rule.from])
+        }
+        print(nodeSet)
+    }
+    print(allSteps)
+
+    let remainingSteps = allSteps.subtracting(nodeSet.keys)
+    print("remainingSteps: \(remainingSteps)")
+
+    var availableSteps = Heap<Char>(priorityFunction: <)
+    for step in remainingSteps {
+        availableSteps.enqueue(step)
+    }
+
+    var stepsTaken = [Char]()
+
+    var workers = [Worker](repeating: Worker(currentStep: nil, secondsLeft: 0), count: workerCount)
+
+    while !availableSteps.isEmpty || !(workers.compactMap { $0.currentStep }.isEmpty) {
+        print(workers)
+        // each time around is 1 second.
+        // first, the workers work.
+        for i in 0..<workers.count {
+            if let currentStep = workers[i].currentStep {
+                workers[i].work()
+                if workers[i].isDone {
+                    workers[i].currentStep = nil
+                    stepsTaken.append(currentStep)
+                    for key in nodeSet.keys {
+                        nodeSet[key]!.requires.remove(currentStep)
+                        if nodeSet[key]!.requires.isEmpty {
+                            nodeSet[key] = nil
+                            availableSteps.enqueue(key)
+                        }
+                    }
+                }
+            }
+        }
+
+        // then, idle workers get loaded up
+        for i in 0..<workers.count {
+            if !workers[i].isBusy {
+                if let nextStep = availableSteps.dequeue() {
+                    let time = -(nextStep.distance(to: "A")) + 1 + minSecs
+                    workers[i].currentStep = nextStep
+                    workers[i].secondsLeft = time
+                }
+            }
+        }
+
+        time += 1
+    }
+
+    print(stepsTaken)
+    return (time - 1)
+}
+
+print(hardBuild(rules: testRules, workers: 2, minSecs: 0))
+
+print(hardBuild(rules: day7rules, workers: 5, minSecs: 60))
 //: [Next](@next)

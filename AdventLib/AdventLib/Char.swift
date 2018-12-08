@@ -32,6 +32,12 @@ extension Char {
     }
 }
 
+extension Char: CustomStringConvertible {
+    public var description: String {
+        return "\(character)"
+    }
+}
+
 extension Char {
     public var lowerCase: Char {
         if isLower {
