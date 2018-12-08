@@ -66,6 +66,30 @@ extension Char {
     }
 }
 
+extension Char: ExpressibleByUnicodeScalarLiteral {
+    public init(unicodeScalarLiteral value: Character) {
+        if let num = value.unicodeScalars.first.map(UInt8.init) {
+            self.num = num
+        } else {
+            self.num = 0
+        }
+    }
+
+    public typealias UnicodeScalarLiteralType = Character
+}
+
+extension Char: Strideable {
+    public func distance(to other: Char) -> Int {
+        return Int(other.num) - Int(self.num)
+    }
+
+    public func advanced(by n: Int) -> Char {
+        return Char(num: UInt8(Int(self.num) + n))
+    }
+
+    public typealias Stride = Int
+}
+
 extension String {
     public var chars: [Char] {
         return utf8.map(Char.init)
