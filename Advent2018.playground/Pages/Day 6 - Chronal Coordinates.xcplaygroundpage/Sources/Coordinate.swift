@@ -101,3 +101,30 @@ public func findLargestArea(coordinates: [Coordinate]) -> Int {
     print(counts)
     return counts.values.sorted { $0 > $1 }.first!
 }
+
+public func sizeOfNearbyArea(coordinates: [Coordinate], limit: Int) -> Int {
+    let buffer = (limit / coordinates.count) + 1
+    // first, we find the min and max x and y
+    let minX = coordinates.map { $0.x }.min()!
+    let minY = coordinates.map { $0.y }.min()!
+    let maxX = coordinates.map { $0.x }.max()!
+    let maxY = coordinates.map { $0.y }.max()!
+
+    let origin = Coordinate(x: minX - buffer, y: minY - buffer)
+    // and the size is the difference, plus two
+    let width = (maxX - minX) + (2 * buffer)
+    let height = (maxY - minY) + (2 * buffer)
+
+    var count = 0
+    for x in 0..<width {
+        for y in 0..<height {
+            let normalized = Coordinate(x: x, y: y) + origin
+            let totalDistance = coordinates.map { $0.distance(to: normalized) }.reduce(0, +)
+            if totalDistance < limit {
+                count += 1
+            }
+        }
+    }
+    return count
+}
+

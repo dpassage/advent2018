@@ -20,6 +20,12 @@ let url = Bundle.main.url(forResource: "day6.input", withExtension: "txt")!
 let day6lines = try! String(contentsOf: url).components(separatedBy: "\n")
 let day6coords = day6lines.compactMap(Coordinate.init)
 
-print(findLargestArea(coordinates: day6coords))
+//print(findLargestArea(coordinates: day6coords))
+
+// part 2
+
+
+print(sizeOfNearbyArea(coordinates: testCoordinates, limit: 32))
+print(sizeOfNearbyArea(coordinates: day6coords, limit: 10_000))
 
 //: [Next](@next)
