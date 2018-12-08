@@ -36,3 +36,18 @@ public struct Rect<Element> {
         return finalResult
     }
 }
+
+extension Rect: CustomStringConvertible {
+    public var description: String {
+        var result: String = ""
+        for y in 0..<height {
+            for x in 0..<width {
+                let thisIndex = (y * width) + x
+                result += "\(storage[thisIndex]) "
+            }
+            result += "\n"
+        }
+
+        return result
+    }
+}
