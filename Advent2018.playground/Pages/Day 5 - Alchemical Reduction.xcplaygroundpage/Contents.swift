@@ -3,51 +3,33 @@
 import Foundation
 import AdventLib
 
-let chars = "foo".chars
+func fasterReact(input: String) -> String {
+    let inputChars = input.chars
+    var outputChars = [Char]()
 
-func react(inputChars: [Char]) -> [Char] {
-    var output = [Char]()
-    print(inputChars.count)
-
-    var index = 0
-    while index < inputChars.count - 1 {
-//        let this = (inputChars[index])
-//        let next = (inputChars[index + 1])
-
-        if inputChars[index] != inputChars[index + 1] && inputChars[index] ~= inputChars[index + 1] {
-            (index += 2)
+    for char in inputChars {
+        guard let last = outputChars.last else {
+            outputChars.append(char); continue
+        }
+        if char != last && char ~= last {
+            (outputChars.removeLast())
         } else {
-            (output.append(inputChars[index]))
-            (index += 1)
+            (outputChars.append(char))
         }
     }
 
-    if index == inputChars.count - 1 {
-        output.append(inputChars[inputChars.count - 1])
-    }
-    return output
+    return String(outputChars)
 }
 
-func fullyReact(inputChars: [Char]) -> [Char] {
-    let reacted = react(inputChars: inputChars)
-    if reacted == inputChars { return reacted }
-    return fullyReact(inputChars: reacted)
-}
+print(fasterReact(input: "aA"))
+print(fasterReact(input: "abBA"))
+print(fasterReact(input: "abAB"))
+print(fasterReact(input: "aabAAB"))
 
-func fullyReact(input: String) -> String {
-    let chars = fullyReact(inputChars: input.chars)
-    return String(chars)
-}
-
-print(fullyReact(input: "aA"))
-print(fullyReact(input: "abBA"))
-print(fullyReact(input: "abAB"))
-print(fullyReact(input: "aabAAB"))
-
-print(fullyReact(input: "dabAcCaCBAcCcaDA"))
+print(fasterReact(input: "dabAcCaCBAcCcaDA"))
 
 let url = Bundle.main.url(forResource: "day5.input", withExtension: "txt")!
 let day5input = try! String(contentsOf: url).components(separatedBy: "\n").first! // chop newline
-print(fullyReact(input: day5input).count)
+print(fasterReact(input: day5input).count)
 
 //: [Next](@next)
