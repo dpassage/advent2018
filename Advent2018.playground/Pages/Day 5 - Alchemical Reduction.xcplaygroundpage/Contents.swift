@@ -1,25 +1,53 @@
 //: [Previous](@previous)
 
 import Foundation
+import AdventLib
 
-// A Char represents an ASCII character.
-// Useful when Unicode just pisses you off.
-struct Char {
-    var num: UInt8
-}
+let chars = "foo".chars
 
-extension Char: Comparable {
-    static func < (lhs: Char, rhs: Char) -> Bool {
-        return lhs.num < rhs.num
+func react(inputChars: [Char]) -> [Char] {
+    var output = [Char]()
+    print(inputChars.count)
+
+    var index = 0
+    while index < inputChars.count - 1 {
+//        let this = (inputChars[index])
+//        let next = (inputChars[index + 1])
+
+        if inputChars[index] != inputChars[index + 1] && inputChars[index] ~= inputChars[index + 1] {
+            (index += 2)
+        } else {
+            (output.append(inputChars[index]))
+            (index += 1)
+        }
     }
+
+    if index == inputChars.count - 1 {
+        output.append(inputChars[inputChars.count - 1])
+    }
+    return output
 }
 
-extension Char: Hashable {}
+func fullyReact(inputChars: [Char]) -> [Char] {
+    let reacted = react(inputChars: inputChars)
+    if reacted == inputChars { return reacted }
+    return fullyReact(inputChars: reacted)
+}
 
+func fullyReact(input: String) -> String {
+    let chars = fullyReact(inputChars: input.chars)
+    return String(chars)
+}
 
+print(fullyReact(input: "aA"))
+print(fullyReact(input: "abBA"))
+print(fullyReact(input: "abAB"))
+print(fullyReact(input: "aabAAB"))
 
-let foo = "asdf".utf8
+print(fullyReact(input: "dabAcCaCBAcCcaDA"))
 
-let chars = foo.map(Char.init)
+let url = Bundle.main.url(forResource: "day5.input", withExtension: "txt")!
+let day5input = try! String(contentsOf: url).components(separatedBy: "\n").first! // chop newline
+print(fullyReact(input: day5input).count)
 
 //: [Next](@next)
