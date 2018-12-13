@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6BC801EC21C209CB00588758 /* TwoWayArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC801EB21C209CB00588758 /* TwoWayArray.swift */; };
+		6BC801EE21C20B8C00588758 /* TwoWayArrayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC801ED21C20B8C00588758 /* TwoWayArrayTests.swift */; };
 		6BD8D93D21BBB52100B7CD4C /* Heap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BD8D93C21BBB52100B7CD4C /* Heap.swift */; };
 		6BFB788021B9FE5E00A772EC /* AdventLib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6BFB787621B9FE5E00A772EC /* AdventLib.framework */; };
 		6BFB788521B9FE5E00A772EC /* AdventLibTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BFB788421B9FE5E00A772EC /* AdventLibTests.swift */; };
@@ -28,6 +30,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		6BC801EB21C209CB00588758 /* TwoWayArray.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwoWayArray.swift; sourceTree = "<group>"; };
+		6BC801ED21C20B8C00588758 /* TwoWayArrayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwoWayArrayTests.swift; sourceTree = "<group>"; };
 		6BD8D93C21BBB52100B7CD4C /* Heap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Heap.swift; sourceTree = "<group>"; };
 		6BFB787621B9FE5E00A772EC /* AdventLib.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = AdventLib.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6BFB787921B9FE5E00A772EC /* AdventLib.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AdventLib.h; sourceTree = "<group>"; };
@@ -87,6 +91,7 @@
 				6BFB787921B9FE5E00A772EC /* AdventLib.h */,
 				6BFB787A21B9FE5E00A772EC /* Info.plist */,
 				6BD8D93C21BBB52100B7CD4C /* Heap.swift */,
+				6BC801EB21C209CB00588758 /* TwoWayArray.swift */,
 			);
 			path = AdventLib;
 			sourceTree = "<group>";
@@ -97,6 +102,7 @@
 				6BFB788421B9FE5E00A772EC /* AdventLibTests.swift */,
 				6BFB788621B9FE5E00A772EC /* Info.plist */,
 				6BFB789621BB860A00A772EC /* CharTests.swift */,
+				6BC801ED21C20B8C00588758 /* TwoWayArrayTests.swift */,
 			);
 			path = AdventLibTests;
 			sourceTree = "<group>";
@@ -213,6 +219,7 @@
 				6BFB789521BA031B00A772EC /* Char.swift in Sources */,
 				6BFB789321B9FF2C00A772EC /* Regex.swift in Sources */,
 				6BD8D93D21BBB52100B7CD4C /* Heap.swift in Sources */,
+				6BC801EC21C209CB00588758 /* TwoWayArray.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -221,6 +228,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6BFB788521B9FE5E00A772EC /* AdventLibTests.swift in Sources */,
+				6BC801EE21C20B8C00588758 /* TwoWayArrayTests.swift in Sources */,
 				6BFB789721BB860A00A772EC /* CharTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
