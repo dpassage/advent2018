@@ -3,7 +3,7 @@ import Foundation
 public struct Scoreboard {
     var elf1index: Int = 0
     var elf2index: Int = 1
-    var board = [3, 7]
+    public var board = [3, 7]
 
     public init() {}
 
@@ -25,5 +25,22 @@ public struct Scoreboard {
 
         let next10 = board[limit ..< (limit + 10)]
         return next10.map(String.init).joined()
+    }
+}
+
+extension Scoreboard {
+    public mutating func recipesUntil(pattern: String) -> Int {
+        let expected = pattern.compactMap { Int(String($0)) }
+
+        var i = 0
+        while true {
+            let neededLength = i + pattern.count
+            while self.board.count < neededLength {
+                iterate()
+            }
+            let candidate = [Int](self.board[i ..< i + pattern.count])
+            if candidate == expected { return i }
+            i += 1
+        }
     }
 }
