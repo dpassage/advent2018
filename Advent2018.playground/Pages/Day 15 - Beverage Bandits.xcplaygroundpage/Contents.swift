@@ -17,12 +17,27 @@ extension Point: Comparable {
         }
         return lhs.y < rhs.y
     }
+
+    func adjacents() -> [Point] {
+        return [
+            Point(x: x - 1, y: y),
+            Point(x: x + 1, y: y),
+            Point(x: x, y: y + 1),
+            Point(x: x, y: y - 1)
+        ]
+    }
 }
+
+
 
 extension Rect {
     subscript(point: Point) -> Element {
         get { return self[point.x, point.y] }
         set { self[point.x, point.y] = newValue }
+    }
+
+    func isValidIndex(_ point: Point) -> Bool {
+        return (0..<width).contains(point.x) && (0..<height).contains(point.y)
     }
 }
 
@@ -67,6 +82,10 @@ struct Cave: CustomStringConvertible {
         }
     }
 
+    func isOccupied(_ point: Point) -> Bool {
+        return grid[point] == .wall || units.map { $0.position }.contains(point)
+    }
+
     var description: String {
         var result = ""
         let unitMap = [Point: Unit.Kind](uniqueKeysWithValues: units.map { ($0.position, $0.kind) })
@@ -83,6 +102,38 @@ struct Cave: CustomStringConvertible {
         }
         return result
     }
+
+    mutating func round() {
+        units.sort { $0.position < $1.position }
+        for unit in units {
+            turn(unit: unit)
+        }
+    }
+
+    mutating func turn(unit: Unit) {
+        // find all target units
+        let targets = units.filter { $0.kind != unit.kind }
+        // find all squares adjacent to a target
+        let allAdjacentSquares = Set(targets.flatMap { $0.position.adjacents() })
+        // filter by valid
+        let validAdjacent = allAdjacentSquares.filter { grid.isValidIndex($0) }
+        // filter by empty
+        let emptyAdjacentToTarget = validAdjacent.filter { !isOccupied($0) }
+        // if i'm in one of them, go to attack
+
+        // for square in adjency list
+        //  find shortest path to square
+        // pick target square
+        // for open squares next to me
+        //   find shortest paths to target
+        // pick next square
+        // move
+
+
+        // if i'm now next to a target, attack
+    }
+
+    mutating func attack(from: Unit, to: Unit) {}
 }
 
 let firstTest = """
