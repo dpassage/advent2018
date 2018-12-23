@@ -226,7 +226,12 @@ public struct Cave: CustomStringConvertible {
     func shortestPath(from: Point, to destination: Point) -> PathRecord? {
         var visited: Set<Point> = []
         var heap = Heap<PathRecord> { (left, right) -> Bool in
-            left.score(destination: destination) < right.score(destination: destination)
+            let leftScore = left.score(destination: destination)
+            let rightScore = right.score(destination: destination)
+            if leftScore == rightScore {
+                return left.path.first! < right.path.first!
+            }
+            return leftScore < rightScore
         }
         let adjacents = from.adjacents().filter { grid.isValidIndex($0) }.filter { !isOccupied($0) }
         for adjacent in adjacents {
