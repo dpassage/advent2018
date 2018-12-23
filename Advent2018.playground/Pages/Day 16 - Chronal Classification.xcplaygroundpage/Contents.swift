@@ -2,12 +2,51 @@
 
 import Foundation
 import AdventLib
+//
+//typealias Operation = (inout Device, Int, Int, Int) -> ()
 
-typealias Operation = (inout Device, Int, Int, Int) -> ()
+enum Operation: String, CaseIterable {
+    case addr
+    case addi
+    case mulr
+    case muli
+    case banr
+    case bani
+    case borr
+    case bori
+    case setr
+    case seti
+    case gtir
+    case gtri
+    case gtrr
+    case eqir
+    case eqri
+    case eqrr
 
+    var op: (inout Device, Int, Int, Int) -> () {
+        switch self {
+        case .addr: return InstructionSet.addr
+        case .addi: return InstructionSet.addi
+        case .mulr: return InstructionSet.mulr
+        case .muli: return InstructionSet.muli
+        case .banr: return InstructionSet.banr
+        case .bani: return InstructionSet.bani
+        case .borr: return InstructionSet.borr
+        case .bori: return InstructionSet.bori
+        case .setr: return InstructionSet.setr
+        case .seti: return InstructionSet.seti
+        case .gtir: return InstructionSet.gtir
+        case .gtri: return InstructionSet.gtri
+        case .gtrr: return InstructionSet.gtrr
+        case .eqir: return InstructionSet.eqir
+        case .eqri: return InstructionSet.eqri
+        case .eqrr: return InstructionSet.eqrr
+        }
+    }
+}
 struct InstructionSet: CustomStringConvertible {
 
-    var opCodes = [[Operation]](repeating: InstructionSet.allMethods, count: 16)
+    var opCodes = [[Operation]](repeating: Operation.allCases, count: 16)
 
     var description: String {
         var result = ""
@@ -29,6 +68,25 @@ struct InstructionSet: CustomStringConvertible {
         }
         print("result \(instructions.count) instructions")
         opCodes[testCase.instruction.opCode] = instructions
+    }
+
+    mutating func optimized() -> [Operation] {
+        var result = [Operation?](repeatElement(nil, count: 16))
+        var remainingOperations = Operation.allCases
+        while !remainingOperations.isEmpty {
+            guard let uniqueOpcodeIndex = opCodes.firstIndex(where: { (ops) -> Bool in
+                ops.count == 1
+            }) else { fatalError("can't continue") }
+            let uniqueOperation = opCodes[uniqueOpcodeIndex].removeFirst()
+            print("found \(uniqueOperation) index \(uniqueOpcodeIndex)")
+            result[uniqueOpcodeIndex] = uniqueOperation
+            for i in 0..<opCodes.count {
+                opCodes[i].removeAll { $0 == uniqueOperation }
+            }
+            remainingOperations.removeAll { $0 == uniqueOperation }
+        }
+        print(result)
+        return result.map { $0! }
     }
 
     // addr (add register) stores into register C the result of adding register A and register B.
@@ -142,19 +200,19 @@ struct Device: CustomStringConvertible {
     init(registers: [Int]) { self.registers = registers }
 
     mutating func apply(_ operation: Operation, a: Int, b: Int, c: Int) {
-        operation(&self, a, b, c)
+        operation.op(&self, a, b, c)
     }
 
-    mutating func execute(instruction: Instruction, instructionSet: InstructionSet) {
+    mutating func execute(instruction: Instruction, operations: [Operation]) {
         let opCode = instruction.opCode
-        let operation = instructionSet.opCodes[opCode].first!
+        let operation = operations[opCode]
         print(self, instruction)
         apply(operation, a: instruction.a, b: instruction.b, c: instruction.c)
     }
 
-    mutating func program(instructions: [Instruction], instructionSet: InstructionSet) {
+    mutating func program(instructions: [Instruction], operations: [Operation]) {
         for instruction in instructions {
-            execute(instruction: instruction, instructionSet: instructionSet)
+            execute(instruction: instruction, operations: operations)
         }
     }
 
@@ -249,8 +307,10 @@ for i in 0..<16 {
 }
 print(instructionSet)
 
+let operations = instructionSet.optimized()
+
 var finalDevice = Device(registers: [0, 0, 0, 0])
-finalDevice.program(instructions: day16instructions, instructionSet: instructionSet)
+finalDevice.program(instructions: day16instructions, operations: operations)
 print(finalDevice)
 
 //: [Next](@next)
