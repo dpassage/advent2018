@@ -135,7 +135,7 @@ public struct Cave: CustomStringConvertible {
         }
     }
 
-    mutating func round() -> Int? {
+    public mutating func round() -> Int? {
         units.sort { $0.position < $1.position }
         print(units)
         for unit in units {

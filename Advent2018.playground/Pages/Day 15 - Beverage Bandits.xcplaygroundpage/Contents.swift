@@ -75,13 +75,76 @@ import AdventLib
 //#########
 //""")
 //print(sixthTestCave.fight()) // 18740
+//
+//var cornerCaseOne = Cave(input: """
+//####
+//##E#
+//#GG#
+//####
+//""")
+//print(cornerCaseOne.fight()) // should take 67 rounts, score 13400
+//
+//var cornerCaseTwo = Cave(input: """
+//#####
+//#GG##
+//#.###
+//#..E#
+//#.#G#
+//#.E##
+//#####
+//""")
+//print(cornerCaseTwo.fight()) // 71 rounds, score 13987
+//
+//var cornerCaseThree = Cave(input: """
+//#######
+//#.E..G#
+//#.#####
+//#G#####
+//#######
+//""")
+//print(cornerCaseThree.fight())
+//
+//var cornerCaseFour = Cave(input: """
+//################
+//#.......G......#
+//#G.............#
+//#..............#
+//#....###########
+//#....###########
+//#.......EG.....#
+//################
+//""")
+//print(cornerCaseFour.fight()) // 18468
+//
+//var cornerCaseFive = Cave(input: """
+//######################
+//#...................E#
+//#.####################
+//#....................#
+//####################.#
+//#....................#
+//#.####################
+//#....................#
+//###.##################
+//#EG.#................#
+//######################
+//""")
+//print(cornerCaseFive.fight()) // 13332
 
+var testCaseOne = Cave(input: """
+####
+#G.#
+#GE#
+####
+""")
+print(testCaseOne.fight())
 
-let url = Bundle.main.url(forResource: "day15.input", withExtension: "txt")!
-let day15input = try! String(contentsOf: url)
-var day15cave = Cave(input: day15input)
-
-print(day15cave.fight()) // 232505 is too high!
-                         // 235417 is too high! (also higher than the last guess...)
+//
+//let url = Bundle.main.url(forResource: "day15.input", withExtension: "txt")!
+//let day15input = try! String(contentsOf: url)
+//var day15cave = Cave(input: day15input)
+//
+//print(day15cave.fight()) // 232505 is too high!
+//                         // 235417 is too high! (also higher than the last guess...)
 
 //: [Next](@next)
