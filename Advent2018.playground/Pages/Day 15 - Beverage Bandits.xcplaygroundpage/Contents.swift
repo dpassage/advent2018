@@ -78,7 +78,12 @@ enum Space: Character {
 struct Cave: CustomStringConvertible {
     var grid: Rect<Space>
     var units: [Unit] = []
+    var unitPositions: [Point: Unit] = [:]
     var roundsCompleted = 0
+
+    mutating func updateUnitPositions() {
+        unitPositions = [Point: Unit](uniqueKeysWithValues: units.map { ($0.position, $0) })
+    }
 
     init(input: String) {
         let lines = input.components(separatedBy: "\n")
@@ -93,20 +98,20 @@ struct Cave: CustomStringConvertible {
                 }
             }
         }
+        updateUnitPositions()
     }
 
     func isOccupied(_ point: Point) -> Bool {
-        return grid[point] == .wall || units.map { $0.position }.contains(point)
+        return grid[point] == .wall || unitPositions.keys.contains(point)
     }
 
     var description: String {
         var result = ""
-        let unitMap = [Point: Unit](uniqueKeysWithValues: units.map { ($0.position, $0) })
         for y in 0..<grid.height {
             var thisRowUnits = [Unit]()
             for x in 0..<grid.width {
                 let location = Point(x: x, y: y)
-                if let unit = unitMap[location] {
+                if let unit = unitPositions[location] {
                     result.append(unit.kind.rawValue)
                     thisRowUnits.append(unit)
                 } else {
@@ -143,111 +148,102 @@ struct Cave: CustomStringConvertible {
     }
 
     func finalScore() -> Int {
-        let remainingPoints = units.map { $0.hitPoints }.reduce(1, *)
+        let remainingPoints = units.map { $0.hitPoints }.reduce(0, +)
         return remainingPoints * roundsCompleted
     }
 
-    // returns true if unit had a target
+
     mutating func turn(unit: Unit) -> Bool {
         print("turn for \(unit)")
-        // find all target units
+        if unit.hitPoints <= 0 {
+            print("\(unit) alrady dead, skipping")
+            return true
+        }
         let targets = units.filter { $0.kind != unit.kind }
         guard !targets.isEmpty else { return false }
         print("targets are \(targets)")
-        // find all squares adjacent to a target
-        let allAdjacentSquares = Set(targets.flatMap { $0.position.adjacents() })
-        // filter by valid
-        let validAdjacent = allAdjacentSquares.filter { grid.isValidIndex($0) }
-        print("validAdjacent: \(validAdjacent)")
-        // filter by empty
-         // if i'm not in one of them
-        /// WRONG!!
-        if !validAdjacent.contains(unit.position) {
-            print("moving!")
-            // move!
-            let emptyAdjacentToTarget = validAdjacent.filter { !isOccupied($0) }
-            print("emptyAdjacentToTarget: ", emptyAdjacentToTarget)
 
-            // for square in adjency list
-            //  find shortest path to square
-            let pathsToTargets: [(length: Int, target: Point)] = emptyAdjacentToTarget.map { (target) -> (length: Int, target: Point) in
-                let length = shortestPath(from: unit.position, to: target)
-                return (length, target)
-            }
-
-            // pick target square
-
-            let targetSquare = pathsToTargets.sorted { (lhs, rhs) -> Bool in
-                if lhs.length == rhs.length {
-                    return lhs.target < rhs.target
-                }
-                return lhs.length < rhs.length
-            }.first?.target
-
-            if let targetSquare = targetSquare {
-                let nextSquares = unit.position.adjacents()
-                    .filter { grid.isValidIndex($0) }
-                    .filter { !isOccupied($0 )}
-                print("nextSquares: \(nextSquares)")
-                let nextSquareDistances = nextSquares.map { (nextSquare) -> (length: Int, nextSquare: Point) in
-                    let length = shortestPath(from: targetSquare, to: nextSquare)
-                    return (length, nextSquare)
-                }
-                print("nextSquareDistances: \(nextSquareDistances)")
-                let bestMove = nextSquareDistances.sorted { (lhs, rhs) -> Bool in
-                    if lhs.length == rhs.length {
-                        return lhs.nextSquare < rhs.nextSquare
-                    }
-                    return lhs.length < rhs.length
-                    }.first?.nextSquare
-
-                if let bestMove = bestMove {
-                    print("moving to \(bestMove)")
-                    unit.position = bestMove
-                } else {
-                    print("no useful move")
-                }
-
-            }
-        } else {
-            print("already adjacent, not moving")
-        }
-
-        // if i'm now next to a target, attack
+        // move
+        move(unit, targets: targets)
+        // attack
         attack(from: unit, targets: targets)
-
         return true
     }
 
-    private struct PathRecord {
-        var currentLoc: Point
-        var steps: Int
+    mutating func move(_ unit: Unit, targets: [Unit]) {
+        print("move for \(unit)")
+        // first check to see if there's a target adjacent
+        let adjacents = unit.position.adjacents()
+        for target in targets {
+            if adjacents.contains(target.position) {
+                print("already next to a target")
+                return
+            }
+        }
 
-        func score(destination: Point) -> Int {
-            return currentLoc.distance(from: destination) + steps
+        let possibleMoves = adjacents.filter { grid.isValidIndex($0) }
+            .filter { !isOccupied($0) }
+        print("possibleMoves: \(possibleMoves)")
+        // for each possible move
+        //   for each target
+        //     compute shortest path
+        var paths: [PathRecord] = []
+        for move in possibleMoves {
+            for target in targets {
+                if let shortestPath = shortestPath(from: move, to: target.position) {
+                    paths.append(shortestPath)
+                }
+            }
+        }
+        // sort by length then order of first step
+
+        let sortedPaths = paths.sorted { (lhs, rhs) -> Bool in
+            if lhs.path.count == rhs.path.count {
+                return lhs.path.first! < rhs.path.first!
+            }
+            return lhs.path.count < rhs.path.count
+        }
+        // if there's a move, that's your move
+        if let move = sortedPaths.first?.path.first {
+            print("moving to \(move)")
+            unit.position = move
+            updateUnitPositions()
+        } else {
+            print("no move found")
         }
     }
 
-    func shortestPath(from: Point, to destination: Point) -> Int {
+    struct PathRecord {
+        var path: [Point]
+
+        func score(destination: Point) -> Int {
+            return (path.last?.distance(from: destination) ?? 0 ) + path.count
+        }
+    }
+
+    func shortestPath(from: Point, to destination: Point) -> PathRecord? {
         var visited: Set<Point> = []
         var heap = Heap<PathRecord> { (left, right) -> Bool in
             left.score(destination: destination) < right.score(destination: destination)
         }
-        heap.enqueue(PathRecord(currentLoc: from, steps: 0))
-
+        heap.enqueue(PathRecord(path: [from]))
+        visited.insert(from)
+ 
         while let current = heap.dequeue() {
-            if current.currentLoc == destination {
-                return current.steps
+            let last = current.path.last!
+            if last == destination {
+                return current
             }
-            for neighbor in current.currentLoc.adjacents() {
+            for neighbor in last.adjacents() {
                 if visited.contains(neighbor) { continue } else { visited.insert(neighbor) }
-                if grid.isValidIndex(neighbor), !isOccupied(neighbor) {
-                    heap.enqueue(PathRecord(currentLoc: neighbor, steps: current.steps + 1))
+                if grid.isValidIndex(neighbor) && (!isOccupied(neighbor) || neighbor == destination) {
+                    let newPath = PathRecord(path: current.path + [neighbor])
+                    heap.enqueue(newPath)
                 }
             }
         }
 
-        return -1
+        return nil
     }
 
     mutating func attack(from: Unit, targets: [Unit]) {
@@ -266,8 +262,12 @@ struct Cave: CustomStringConvertible {
             print("\(from) attacking \(target)")
             target.hitPoints -= 3
             if target.hitPoints <= 0 {
+                print("\(target) is dead removing!")
                 if let index = self.units.firstIndex(where: { $0 === target }) {
                     self.units.remove(at: index)
+                    updateUnitPositions()
+                } else {
+                    print("============ couldn't find target, units: \(units)")
                 }
             }
         } else {
@@ -276,39 +276,30 @@ struct Cave: CustomStringConvertible {
     }
 }
 
-let example = """
-#########
-#G..G..G#
-#.......#
-#.......#
-#G..E..G#
-#.......#
-#.......#
-#G..G..G#
-#########
-"""
+//let firstTest = """
+//#######
+//#.G...#
+//#...EG#
+//#.#.#G#
+//#..G#E#
+//#.....#
+//#######
+//"""
+//
+//var firstTestCave = Cave(input: firstTest)
+//print(firstTestCave)
+//print(firstTestCave.fight())
 
-var cave = Cave(input: example)
-print(cave)
-//cave.round()
-//print(cave)
-//cave.round()
-//print(cave)
-//cave.round()
-//print(cave)
-
-let firstTest = """
+var secondTestCave = Cave(input: """
 #######
-#.G...#
-#...EG#
-#.#.#G#
-#..G#E#
-#.....#
+#G..#E#
+#E#E.E#
+#G.##.#
+#...#E#
+#...E.#
 #######
-"""
+""")
 
-var firstTestCave = Cave(input: firstTest)
-print(firstTestCave)
-print(firstTestCave.fight())
+print(secondTestCave.fight())
 
 //: [Next](@next)
