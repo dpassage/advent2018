@@ -2,18 +2,18 @@
 
 import Foundation
 import AdventLib
-
-
-let firstTest = """
-#######
-#.G...#
-#...EG#
-#.#.#G#
-#..G#E#
-#.....#
-#######
-"""
-
+//
+//
+//let firstTest = """
+//#######
+//#.G...#
+//#...EG#
+//#.#.#G#
+//#..G#E#
+//#.....#
+//#######
+//"""
+//
 //var firstTestCave = Cave(input: firstTest)
 //print(firstTestCave)
 //print(firstTestCave.fight()) // 27730
@@ -75,12 +75,13 @@ let firstTest = """
 //#########
 //""")
 //print(sixthTestCave.fight()) // 18740
-//
+
 
 let url = Bundle.main.url(forResource: "day15.input", withExtension: "txt")!
 let day15input = try! String(contentsOf: url)
 var day15cave = Cave(input: day15input)
 
 print(day15cave.fight()) // 232505 is too high!
+                         // 235417 is too high! (also higher than the last guess...)
 
 //: [Next](@next)

@@ -180,18 +180,21 @@ public struct Cave: CustomStringConvertible {
             }
         }
 
-        let possibleMoves = adjacents.filter { grid.isValidIndex($0) }
+        let targetSquares = Set(targets.flatMap { $0.position.adjacents() })
+            .filter { grid.isValidIndex($0) }
             .filter { !isOccupied($0) }
-        print("possibleMoves: \(possibleMoves)")
+
+//        let possibleMoves = adjacents.filter { grid.isValidIndex($0) }
+//            .filter { !isOccupied($0) }
+//        print("possibleMoves: \(possibleMoves)")
+        print("targetSquares: \(targetSquares)")
         // for each possible move
         //   for each target
         //     compute shortest path
         var paths: [PathRecord] = []
-        for move in possibleMoves {
-            for target in targets {
-                if let shortestPath = shortestPath(from: move, to: target.position) {
-                    paths.append(shortestPath)
-                }
+        for target in targetSquares {
+            if let shortestPath = shortestPath(from: unit.position, to: target) {
+                paths.append(shortestPath)
             }
         }
         // sort by length then order of first step
@@ -225,8 +228,11 @@ public struct Cave: CustomStringConvertible {
         var heap = Heap<PathRecord> { (left, right) -> Bool in
             left.score(destination: destination) < right.score(destination: destination)
         }
-        heap.enqueue(PathRecord(path: [from]))
-        visited.insert(from)
+        let adjacents = from.adjacents().filter { grid.isValidIndex($0) }.filter { !isOccupied($0) }
+        for adjacent in adjacents {
+            heap.enqueue(PathRecord(path: [adjacent]))
+            visited.insert(adjacent)
+        }
 
         while let current = heap.dequeue() {
             let last = current.path.last!
@@ -235,7 +241,7 @@ public struct Cave: CustomStringConvertible {
             }
             for neighbor in last.adjacents() {
                 if visited.contains(neighbor) { continue } else { visited.insert(neighbor) }
-                if grid.isValidIndex(neighbor) && (!isOccupied(neighbor) || neighbor == destination) {
+                if grid.isValidIndex(neighbor) && (!isOccupied(neighbor)) {
                     let newPath = PathRecord(path: current.path + [neighbor])
                     heap.enqueue(newPath)
                 }
