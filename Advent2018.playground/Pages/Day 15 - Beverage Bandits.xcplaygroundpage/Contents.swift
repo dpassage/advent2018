@@ -132,12 +132,22 @@ import AdventLib
 //print(cornerCaseFive.fight()) // 13332
 
 var testCaseOne = Cave(input: """
-####
-#G.#
-#GE#
-####
+#########
+#G..G..G#
+#.......#
+#.......#
+#G..E..G#
+#.......#
+#.......#
+#G..G..G#
+#########
 """)
-print(testCaseOne.fight())
+print(testCaseOne.round())
+print(testCaseOne)
+print(testCaseOne.round())
+print(testCaseOne)
+print(testCaseOne.round())
+print(testCaseOne)
 
 //
 //let url = Bundle.main.url(forResource: "day15.input", withExtension: "txt")!
