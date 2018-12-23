@@ -183,10 +183,6 @@ public struct Cave: CustomStringConvertible {
         let targetSquares = Set(targets.flatMap { $0.position.adjacents() })
             .filter { grid.isValidIndex($0) }
             .filter { !isOccupied($0) }
-
-//        let possibleMoves = adjacents.filter { grid.isValidIndex($0) }
-//            .filter { !isOccupied($0) }
-//        print("possibleMoves: \(possibleMoves)")
         print("targetSquares: \(targetSquares)")
         // for each possible move
         //   for each target
@@ -197,11 +193,11 @@ public struct Cave: CustomStringConvertible {
                 paths.append(shortestPath)
             }
         }
-        // sort by length then order of first step
+        // sort by length then order of last step
 
         let sortedPaths = paths.sorted { (lhs, rhs) -> Bool in
             if lhs.path.count == rhs.path.count {
-                return lhs.path.first! < rhs.path.first!
+                return lhs.path.last! < rhs.path.last!
             }
             return lhs.path.count < rhs.path.count
         }
