@@ -84,7 +84,7 @@ public struct Cave: CustomStringConvertible {
     }
 
     public init(input: String) {
-        let lines = input.components(separatedBy: "\n")
+        let lines = input.components(separatedBy: "\n").filter { !$0.isEmpty }
         let width = lines.map { $0.count }.max() ?? 0
         grid = Rect(width: width, height: lines.count, defaultValue: .open)
 
