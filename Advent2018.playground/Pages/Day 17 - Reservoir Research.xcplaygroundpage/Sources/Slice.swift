@@ -78,14 +78,17 @@ public struct Slice: CustomStringConvertible {
     public var description: String {
         var result = ""
         var wetCount = 0
+        var remainingCount = 0
         for y in 0..<grid.height {
             for x in 0..<grid.width {
                 result.append(grid[x, y].rawValue)
                 wetCount += grid[x, y].isWet ? 1 : 0
+                remainingCount += (grid[x, y] == .stopped) ? 1 : 0
             }
             result.append("\n")
         }
-        result.append("wetCount: \(wetCount)")
+        result.append("wetCount: \(wetCount)\n")
+        result.append("remainingCount: \(remainingCount)\n")
         return result
     }
 

@@ -56,7 +56,7 @@ var day17slice = Slice(veins: day17veins)
 
 print(day17slice.grid.width, day17slice.grid.height)
 
-day17slice.fill() // 27331 is correct!
-
+day17slice.fill() // 27331 is correct part 1!
+                  // 22245 is correct part 2!
 
 //: [Next](@next)
