@@ -40,7 +40,6 @@ x=508, y=2..6
 x=502, y=3..4
 x=504, y=3..4
 y=4, x=502..504
-y=1, x=510..510
 """
 let cupVeins = cupTest.components(separatedBy: "\n").compactMap(Vein.init)
 var cupSlice = Slice(veins: cupVeins)
@@ -48,17 +47,16 @@ cupSlice.printSteps = true
 print(cupSlice)
 cupSlice.fill()
 
-//
-//let url = Bundle.main.url(forResource: "day17.input", withExtension: "txt")!
-//let day17string = try! String(contentsOf: url)
-//let day17lines = day17string.components(separatedBy: "\n")
-//let day17veins = day17lines.compactMap(Vein.init)
-//var day17slice = Slice(veins: day17veins)
-//
-//print(day17slice.grid.width, day17slice.grid.height)
-//
-//day17slice.fill()
-//print(day17slice.wetCount()) // 22230 is too low
-//print(day17slice)
+
+let url = Bundle.main.url(forResource: "day17.input", withExtension: "txt")!
+let day17string = try! String(contentsOf: url)
+let day17lines = day17string.components(separatedBy: "\n")
+let day17veins = day17lines.compactMap(Vein.init)
+var day17slice = Slice(veins: day17veins)
+
+print(day17slice.grid.width, day17slice.grid.height)
+
+day17slice.fill() // 27331 is correct!
+
 
 //: [Next](@next)

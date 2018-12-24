@@ -55,8 +55,8 @@ public struct Slice: CustomStringConvertible {
     public var printSteps = false
 
     public init(veins: [Vein]) {
-        let minX = veins.map { $0.x.lowerBound }.min()!
-        let maxX = veins.map { $0.x.upperBound }.max()!
+        let minX = veins.map { $0.x.lowerBound }.min()! - 1
+        let maxX = veins.map { $0.x.upperBound }.max()! + 1
         let minY = veins.map { $0.y.lowerBound }.min()!
         let maxY = veins.map { $0.y.upperBound }.max()!
         grid = Rect(width: (maxX - minX) + 1, height: (maxY - minY) + 1, defaultValue: .sand)
@@ -126,11 +126,16 @@ public struct Slice: CustomStringConvertible {
 
     public mutating func fill() {
         while let current = currents.popLast() {
-            print(current)
-            if printSteps { print(self) }
+            if printSteps {
+                print(current, currents)
+                print(self)
+            }
             let below = current.below
             if !grid.isValidIndex(below) { continue } // at bottom of grid, done
             switch grid[below] {
+            case .stream:
+                // already been processed
+                break
             case .sand:
                 grid[below] = .stream
                 currents.append(below)
@@ -149,102 +154,34 @@ public struct Slice: CustomStringConvertible {
                         }
                         grid[current.above] = .stream
                         currents.append(current.above)
-                    } else {
-                        let leftRange = ((left.x + 1) ..< current.x).reversed()
-                        let rightRange = (current.x + 1) ..< right.x
-                        for x in leftRange {
-                            let this = Point(x: x, y: current.y)
-                            if grid[this].isFilled { break }
-                            let below = this.below
-                            grid[this] = .stream
-                            if !grid[below].isFilled {
-                                currents.append(this)
-                                break
-                            }
-                        }
-                        for x in rightRange {
-                            let this = Point(x: x, y: current.y)
-                            if grid[this].isFilled { break }
-                            let below = this.below
-                            grid[this] = .stream
-                            if !grid[below].isFilled {
-                                currents.append(this)
-                                break
-                            }
-                        }
+                        continue
                     }
-                case (nil, nil):
-                    let leftRange = (0 ..< current.x).reversed()
-                    let rightRange = (current.x + 1) ..< grid.width
-                    for x in leftRange {
-                        let this = Point(x: x, y: current.y)
-                        if grid[this].isFilled { break }
-                        let below = this.below
-                        grid[this] = .stream
-                        if !grid[below].isFilled {
-                            currents.append(this)
-                            break
-                        }
-                    }
-                    for x in rightRange {
-                        let this = Point(x: x, y: current.y)
-                        if grid[this].isFilled { break }
-                        let below = this.below
-                        grid[this] = .stream
-                        if !grid[below].isFilled {
-                            currents.append(this)
-                            break
-                        }
-                    }
-                case (let left?, nil):
-                    let leftRange = (left.x + 1 ..< current.x).reversed()
-                    let rightRange = (current.x + 1) ..< grid.width
-                    for x in leftRange {
-                        let this = Point(x: x, y: current.y)
-                        if grid[this].isFilled { break }
-                        let below = this.below
-                        grid[this] = .stream
-                        if !grid[below].isFilled {
-                            currents.append(this)
-                            break
-                        }
-                    }
-                    for x in rightRange {
-                        let this = Point(x: x, y: current.y)
-                        if grid[this].isFilled { break }
-                        let below = this.below
-                        grid[this] = .stream
-                        if !grid[below].isFilled {
-                            currents.append(this)
-                            break
-                        }
-                    }
-                case (nil, let right?):
-                    let leftRange = (0 + 1 ..< current.x).reversed()
-                    let rightRange = (current.x + 1) ..< right.x
-                    for x in leftRange {
-                        let this = Point(x: x, y: current.y)
-                        if grid[this].isFilled { break }
-                        let below = this.below
-                        grid[this] = .stream
-                        if !grid[below].isFilled {
-                            currents.append(this)
-                            break
-                        }
-                    }
-                    for x in rightRange {
-                        let this = Point(x: x, y: current.y)
-                        if grid[this].isFilled { break }
-                        let below = this.below
-                        grid[this] = .stream
-                        if !grid[below].isFilled {
-                            currents.append(this)
-                            break
-                        }
+                default:
+                    break
+                }
+
+                let leftRange = (0 ..< current.x).reversed()
+                let rightRange = (current.x + 1) ..< grid.width
+                for x in leftRange {
+                    let this = Point(x: x, y: current.y)
+                    if grid[this].isFilled { break }
+                    let below = this.below
+                    grid[this] = .stream
+                    if !grid[below].isFilled {
+                        currents.append(this)
+                        break
                     }
                 }
-            default:
-                return
+                for x in rightRange {
+                    let this = Point(x: x, y: current.y)
+                    if grid[this].isFilled { break }
+                    let below = this.below
+                    grid[this] = .stream
+                    if !grid[below].isFilled {
+                        currents.append(this)
+                        break
+                    }
+                }
             }
         }
         print(self)
