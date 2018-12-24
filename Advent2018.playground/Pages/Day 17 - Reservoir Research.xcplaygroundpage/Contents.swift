@@ -23,6 +23,10 @@ enum Square: Character {
     var isWet: Bool {
         return self == .stream || self == .stopped
     }
+
+    var isFilled: Bool {
+        return self == .clay || self == .stopped
+    }
 }
 
 extension Point {
@@ -63,7 +67,7 @@ print(testVeins)
 struct Slice: CustomStringConvertible {
     var grid: Rect<Square>
     var offset: Point
-    var current: Point
+    var currents: [Point]
 
     init(veins: [Vein]) {
         let minX = veins.map { $0.x.lowerBound }.min()!
@@ -81,7 +85,9 @@ struct Slice: CustomStringConvertible {
                 }
             }
         }
-        current = Point(x: 500 - offset.x, y: 0)
+        let firstCurrent = Point(x: 500 - offset.x, y: 0)
+        currents = [firstCurrent]
+        grid[firstCurrent] = .stream
     }
 
     var description: String {
@@ -108,18 +114,159 @@ struct Slice: CustomStringConvertible {
         return result
     }
 
+    func firstClayLeftOf(_ point: Point) -> Point? {
+        var point = point
+        while grid.isValidIndex(point) {
+            if grid[point] == .clay {
+                return point
+            } else {
+                point.x -= 1
+            }
+        }
+        return nil
+    }
+
+    func firstClayRightOf(_ point: Point) -> Point? {
+        var point = point
+        while grid.isValidIndex(point) {
+            if grid[point] == .clay {
+                return point
+            } else {
+                point.x += 1
+            }
+        }
+        return nil
+    }
+
+
     mutating func fill() {
-        switch grid[current] {
-        case .sand:
+        while let current = currents.popLast() {
+            print(self)
             let below = current.below
-            if !grid.isValidIndex(below) { grid[current] = .stream }
-        default:
-            break
+            if !grid.isValidIndex(below) { continue } // at bottom of grid, done
+            switch grid[below] {
+            case .sand:
+                grid[below] = .stream
+                currents.append(below)
+            case .clay, .stopped:
+                let left = firstClayLeftOf(current)
+                let right = firstClayRightOf(current)
+                switch (left, right) {
+                case (let left?, let right?):
+                    // first see if the entire row below us is filled
+                    let range = (left.x + 1) ..< (right.x)
+                    let belowPoints = range.map { Point(x: $0, y: current.y + 1) }
+                    let belowSquares = belowPoints.map { grid[$0] }
+                    if belowSquares.allSatisfy({ $0.isFilled }) {
+                        for x in (left.x + 1) ... (right.x - 1) {
+                            grid[x, current.y] = .stopped
+                        }
+                        currents.append(current.above)
+                    } else {
+                        let leftRange = ((left.x + 1) ..< current.x).reversed()
+                        let rightRange = (current.x + 1) ..< right.x
+                        for x in leftRange {
+                            let this = Point(x: x, y: current.y)
+                            if grid[this].isFilled { break }
+                            let below = this.below
+                            grid[this] = .stream
+                            if !grid[below].isFilled {
+                                currents.append(this)
+                                break
+                            }
+                        }
+                        for x in rightRange {
+                            let this = Point(x: x, y: current.y)
+                            if grid[this].isFilled { break }
+                            let below = this.below
+                            grid[this] = .stream
+                            if !grid[below].isFilled {
+                                currents.append(this)
+                                break
+                            }
+                        }
+                    }
+                case (nil, nil):
+                    let leftRange = (0 ..< current.x).reversed()
+                    let rightRange = (current.x + 1) ..< grid.width
+                    for x in leftRange {
+                        let this = Point(x: x, y: current.y)
+                        if grid[this].isFilled { break }
+                        let below = this.below
+                        grid[this] = .stream
+                        if !grid[below].isFilled {
+                            currents.append(this)
+                            break
+                        }
+                    }
+                    for x in rightRange {
+                        let this = Point(x: x, y: current.y)
+                        if grid[this].isFilled { break }
+                        let below = this.below
+                        grid[this] = .stream
+                        if !grid[below].isFilled {
+                            currents.append(this)
+                            break
+                        }
+                    }
+                case (let left?, nil):
+                    let leftRange = (left.x + 1 ..< current.x).reversed()
+                    let rightRange = (current.x + 1) ..< grid.width
+                    for x in leftRange {
+                        let this = Point(x: x, y: current.y)
+                        if grid[this].isFilled { break }
+                        let below = this.below
+                        grid[this] = .stream
+                        if !grid[below].isFilled {
+                            currents.append(this)
+                            break
+                        }
+                    }
+                    for x in rightRange {
+                        let this = Point(x: x, y: current.y)
+                        if grid[this].isFilled { break }
+                        let below = this.below
+                        grid[this] = .stream
+                        if !grid[below].isFilled {
+                            currents.append(this)
+                            break
+                        }
+                    }
+                case (nil, let right?):
+                    let leftRange = (0 + 1 ..< current.x).reversed()
+                    let rightRange = (current.x + 1) ..< right.x
+                    for x in leftRange {
+                        let this = Point(x: x, y: current.y)
+                        if grid[this].isFilled { break }
+                        let below = this.below
+                        grid[this] = .stream
+                        if !grid[below].isFilled {
+                            currents.append(this)
+                            break
+                        }
+                    }
+                    for x in rightRange {
+                        let this = Point(x: x, y: current.y)
+                        if grid[this].isFilled { break }
+                        let below = this.below
+                        grid[this] = .stream
+                        if !grid[below].isFilled {
+                            currents.append(this)
+                            break
+                        }
+                    }
+                }
+            default:
+                return
+            }
         }
     }
 }
 
 var testSlice = Slice(veins: testVeins)
+print(testSlice)
+
+testSlice.fill()
 print(testSlice)
 
 let url = Bundle.main.url(forResource: "day17.input", withExtension: "txt")!
@@ -128,6 +275,7 @@ let day17lines = day17string.components(separatedBy: "\n")
 let day17veins = day17lines.compactMap(Vein.init)
 var day17slice = Slice(veins: day17veins)
 
+print(day17slice.grid.width, day17slice.grid.height)
 
 
 //: [Next](@next)
