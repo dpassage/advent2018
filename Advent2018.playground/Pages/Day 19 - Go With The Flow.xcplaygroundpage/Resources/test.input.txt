@@ -1,0 +1,21 @@
+#ip 4
+addi 4 16 4  #  0: jump to 17
+seti 1 5 3   #  1: set r3 to 1             // here: r5 is target; r0 is 0
+seti 1 9 1   #  2: set r1 to 1
+mulr 3 1 2   #  3: set r2 to r3 * r1
+eqrr 2 5 2   #  4: set r2 to 1 if r2 == r5
+addr 2 4 4   #  5: jump ahead by r2 + 1
+addi 4 1 4   #  6: jump to 10
+addr 3 0 0   #  7: set r0 to r3 + r0
+addi 1 1 1   #  8: increment r1
+gtrr 1 5 2   #  9: set r2 to 1 if r1 > r5
+addr 4 2 4   # 10: jump ahead by r2 + 1
+seti 2 9 4   # 11: jump to 3
+addi 3 1 3   # 12: increment r3
+gtrr 3 5 2   # 13: set r2 to 1 if r3 > r5
+addr 2 4 4   # 14: jump ahead by r2 + 1
+seti 1 8 4   # 15: jump to 2
+mulr 4 4 4   # 16: jump to 256 i.e. halt
+setr 0 0 5   # 17: copy r0 to r5
+seti 0 0 0   # 18: set r0 to 0
+seti 0 0 4   # 19: jump to 1
