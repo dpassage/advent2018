@@ -1,0 +1,32 @@
+#ip 5
+seti 123 0 1       #  0: set r1 to 123
+bani 1 456 1       #  1: set r1 to 456 & r1
+eqri 1 72 1        #  2: set r1 to 1 if r1 = 72
+addr 1 5 5         #  3: add r1 to ip
+seti 0 0 5         #  4: jump to 1
+seti 0 0 1         #  5: set r1 to 0
+bori 1 65536 2     #  6: set r2 to r1 | 0x01_00_00
+seti 6663054 1 1   #  7: set r1 to 0x65_AB_8E
+bani 2 255 4       #  8: set r4 to r2 & 0xFF
+addr 1 4 1         #  9: set r1 to r1 + r4
+bani 1 16777215 1  # 10: set r1 to r1 & 0xFFFFFF
+muli 1 65899 1     # 11: set r1 to r1 * 65899
+bani 1 16777215 1  # 12: set r1 to r1 & 0xFFFFFF
+gtir 256 2 4       # 13: set r4 to 1 if 256 > r2
+addr 4 5 5         # 14: jump ahead by r4
+addi 5 1 5         # 15: jump to 17
+seti 27 6 5        # 16: jump to 28
+seti 0 6 4         # 17: set r4 to 0
+addi 4 1 3         # 18: set r3 to r4 + 1
+muli 3 256 3       # 19: set r3 to r3 * 256 (i.e. shift left 8 bits)
+gtrr 3 2 3         # 20: set r3 to 1 if r3 > r2
+addr 3 5 5         # 21: jump ahead by r3
+addi 5 1 5         # 22: jump to 24
+seti 25 9 5        # 23: jump to 26
+addi 4 1 4         # 24: add 1 to r4
+seti 17 3 5        # 25: jump to 18
+setr 4 4 2         # 26: set r2 to r4
+seti 7 2 5         # 27: jump to 8
+eqrr 1 0 4         # 28: set r4 to 1 if r1 == r0
+addr 4 5 5         # 29: add r4 to ip
+seti 5 8 5         # 30: jump to 6
