@@ -148,6 +148,7 @@ public struct Device {
     public var steps = 0
     public var printSteps = false
     public var stopIp = Int.max
+    public var stopBlock: (Device) -> () = { _ in }
 
     public init(input: String) {
         registers = [0, 0, 0, 0, 0, 0]
@@ -175,11 +176,10 @@ public struct Device {
     // returns true if next instruction is legal
     public mutating func step() -> Bool {
         guard instructions.indices.contains(ip) else { return false }
-        guard ip != stopIp else { return false }
         let instruction = instructions[ip]
         registers[ipRegister] = ip
-        if printSteps {
-            print(ip, registers, instruction)
+        if ip == stopIp {
+            stopBlock(self)
         }
         instruction.op.op(&self, instruction.a, instruction.b, instruction.c)
         ip = registers[ipRegister]
