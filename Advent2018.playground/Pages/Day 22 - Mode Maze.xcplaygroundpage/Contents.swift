@@ -43,4 +43,16 @@ func totalRiskLevel(depth: Int, target: Point) -> Int {
 print(totalRiskLevel(depth: 510, target: Point(x: 10, y: 10)))
 print(totalRiskLevel(depth: 9465, target: Point(x: 13, y: 704)))
 
+//////////// part 2
+
+
+let testCave = Cave(depth: 510, target: Point(x: 10, y: 10))
+print(testCave.erosionLevel(point: Point(x: 5, y: 5)))
+print(testCave.erosionLevel(point: Point(x: 1, y: 1)))
+print(testCave.regionType(Point(x: 2, y: 2)))
+
+print(testCave.shortestPathLength())
+
+let realCave = Cave(depth: 9465, target: Point(x: 13, y: 704))
+print(realCave.shortestPathLength()) // 975 too high
 //: [Next](@next)
