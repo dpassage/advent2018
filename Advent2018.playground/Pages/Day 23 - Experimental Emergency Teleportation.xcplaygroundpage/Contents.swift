@@ -16,7 +16,7 @@ struct Nanobot {
         return xDist + yDist + zDist
     }
 
-    static let regex = try! Regex(pattern: "pos=<(\\d+),(\\d+),(\\d+)>, r=(\\d+)")
+    static let regex = try! Regex(pattern: "pos=<(-?\\d+),(-?\\d+),(-?\\d+)>, r=(\\d+)")
 
     init?(line: String) {
         guard let matches = Nanobot.regex.match(input: line),
@@ -57,8 +57,8 @@ print(inRangeOfLargest(nanobots))
 let url = Bundle.main.url(forResource: "day23.input", withExtension: "txt")!
 let day23input = try! String(contentsOf: url)
 let day23bots = day23input.components(separatedBy: "\n").compactMap(Nanobot.init)
-
-print(inRangeOfLargest(day23bots)) // 111 too low
+print(day23bots.count)
+print(inRangeOfLargest(day23bots)) // 691 is correct!
 
 
 //: [Next](@next)
