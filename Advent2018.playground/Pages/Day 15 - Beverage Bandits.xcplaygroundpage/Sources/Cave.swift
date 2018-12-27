@@ -154,10 +154,26 @@ public struct Cave: CustomStringConvertible {
             }
             return lhs.path.count < rhs.path.count
         }
-        // if there's a move, that's your move
-        if let move = sortedPaths.first?.path.first {
-            print("moving to \(move)")
-            unit.position = move
+        print("sortedPaths are \(sortedPaths)")
+        guard let selectedTarget = sortedPaths.first?.path.last else {
+            print("no move found")
+            return
+        }
+
+        // now we have a target, figure out what the next square is
+        let startSquares = unit.position.adjacents().filter { grid.isValidIndex($0) }.filter { !isOccupied($0) }
+
+        let startPaths = startSquares.compactMap { shortestPath(from: $0, to: selectedTarget) }
+        let sortedStartPaths = startPaths.sorted { (lhs, rhs) -> Bool in
+            if lhs.path.count == rhs.path.count {
+                return lhs.path.first! < rhs.path.first!
+            }
+            return lhs.path.count < rhs.path.count
+        }
+        print("sortedStartPaths are \(sortedStartPaths)")
+        if let nextSquare = sortedStartPaths.first?.path.first {
+            print("moving to \(nextSquare)")
+            unit.position = nextSquare
             updateUnitPositions()
         } else {
             print("no move found")
@@ -204,6 +220,7 @@ extension Cave {
     }
 
     func shortestPath(from: Point, to destination: Point) -> PathRecord? {
+        print("computing path \(from) to \(destination)")
         let result = aStar(from: from, to: destination)
         if result.cost == -1 {
             return nil
@@ -223,7 +240,7 @@ extension Cave: AStar {
     public func neighborsOf(_ node: Node) -> [(node: Node, distance: Int)] {
         return node.adjacents()
             .filter { grid.isValidIndex($0) }
-            .filter { !unitPositions.keys.contains($0) }
+            .filter { !isOccupied($0) }
             .map { (node: $0, distance: 1) }
     }
 }
