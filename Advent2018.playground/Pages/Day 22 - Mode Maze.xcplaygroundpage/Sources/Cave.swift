@@ -73,28 +73,17 @@ extension Cave {
     }
 }
 
-extension Cave {
-    struct Node: Hashable {
+extension Cave: AStar {
+    public struct Node: Hashable {
         var position: Point
         var tool: Tool
     }
 
-    func reconstructPath(cameFrom: [Node: Node], current: Node) -> [Node] {
-        var current = current
-        var path = [current]
-        while let nextCurrent = cameFrom[current] {
-            path.append(nextCurrent)
-            current = nextCurrent
-        }
-
-        return path
-    }
-
-    func estimatedCost(from: Node, to: Node) -> Int {
+    public func estimatedCost(from: Node, to: Node) -> Int {
         return from.position.distance(from: to.position)
     }
 
-    func neighborsOf(_ node: Node) -> [(node: Node, distance: Int)] {
+    public func neighborsOf(_ node: Node) -> [(node: Node, distance: Int)] {
         let neighbors = node.position.adjacents()
             .filter { $0.x >= 0 && $0.y >= 0 }
             .filter { regionType($0).validTools.contains(node.tool) }
@@ -107,36 +96,6 @@ extension Cave {
         return neighbors + tools
     }
 
-    func aStar(from start: Node, to goal: Node) -> (path: [Node], cost: Int) {
-        var closedSet: Set<Node> = []
-        var cameFrom: [Node: Node] = [:]
-        var gScore: [Node: Int] = [start: 0]
-
-        var heap = Heap<(node: Node, fScore: Int)>(priorityFunction: { $0.fScore < $1.fScore })
-
-        heap.enqueue((node: start, fScore: estimatedCost(from: start, to: goal)))
-
-        while let current = heap.dequeue()?.node {
-            if current == goal {
-                let path = reconstructPath(cameFrom: cameFrom, current: current)
-                let score = gScore[current, default: Int.max]
-                return (path, score)
-            }
-            closedSet.insert(current)
-
-            for (neighbor, distance) in neighborsOf(current) {
-                if closedSet.contains(neighbor) { continue }
-                let tentativeScore = gScore[current, default: Int.max] + distance
-                if tentativeScore > gScore[neighbor, default: Int.max] {
-                    continue
-                }
-                cameFrom[neighbor] = current
-                gScore[neighbor] = tentativeScore
-                heap.enqueue((node: neighbor, fScore: tentativeScore + estimatedCost(from: neighbor, to: goal)))
-            }
-        }
-        return (path: [], cost: -1)
-    }
     public func shortestPathLength() -> Int {
         let start = Node(position: .origin, tool: .torch)
         let goal = Node(position: target, tool: .torch)
