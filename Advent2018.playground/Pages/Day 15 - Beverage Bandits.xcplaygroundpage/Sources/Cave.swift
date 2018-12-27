@@ -1,53 +1,6 @@
 import Foundation
 import AdventLib
 
-struct Point: CustomStringConvertible {
-    var x: Int
-    var y: Int
-
-    var description: String {
-        return "(\(x), \(y))"
-    }
-}
-
-extension Point: Hashable {}
-
-extension Point: Comparable {
-    static func < (lhs: Point, rhs: Point) -> Bool {
-        if lhs.y == rhs.y {
-            return lhs.x < rhs.x
-        }
-        return lhs.y < rhs.y
-    }
-
-    func adjacents() -> [Point] {
-        return [
-            Point(x: x - 1, y: y),
-            Point(x: x + 1, y: y),
-            Point(x: x, y: y + 1),
-            Point(x: x, y: y - 1)
-        ]
-    }
-
-    func distance(from: Point) -> Int {
-        return abs(from.x - x) + abs(from.y - y)
-    }
-}
-
-
-
-extension Rect {
-    subscript(point: Point) -> Element {
-        get { return self[point.x, point.y] }
-        set { self[point.x, point.y] = newValue }
-    }
-
-    func isValidIndex(_ point: Point) -> Bool {
-        return (0..<width).contains(point.x) && (0..<height).contains(point.y)
-    }
-}
-
-
 class Unit: CustomStringConvertible {
     enum Kind: Character {
         case goblin = "G"
@@ -211,6 +164,37 @@ public struct Cave: CustomStringConvertible {
         }
     }
 
+    mutating func attack(from: Unit, targets: [Unit]) {
+        print("attacking!")
+        let targetPositions = [Point: Unit](uniqueKeysWithValues: targets.map { ($0.position, $0) })
+
+        let adjacentToMe = from.position.adjacents()
+        let adjacentTargets = adjacentToMe.compactMap { targetPositions[$0] }
+        let sortedTargets = adjacentTargets.sorted { (lhs, rhs) -> Bool in
+            if lhs.hitPoints == rhs.hitPoints {
+                return lhs.position < rhs.position
+            }
+            return lhs.hitPoints < rhs.hitPoints
+        }
+        if let target = sortedTargets.first {
+            print("\(from) attacking \(target)")
+            target.hitPoints -= 3
+            if target.hitPoints <= 0 {
+                print("\(target) is dead removing!")
+                if let index = self.units.firstIndex(where: { $0 === target }) {
+                    self.units.remove(at: index)
+                    updateUnitPositions()
+                } else {
+                    print("============ couldn't find target, units: \(units)")
+                }
+            }
+        } else {
+            print("\(from) cannot attack")
+        }
+    }
+}
+
+extension Cave {
     struct PathRecord {
         var path: [Point]
 
@@ -252,32 +236,4 @@ public struct Cave: CustomStringConvertible {
         return nil
     }
 
-    mutating func attack(from: Unit, targets: [Unit]) {
-        print("attacking!")
-        let targetPositions = [Point: Unit](uniqueKeysWithValues: targets.map { ($0.position, $0) })
-
-        let adjacentToMe = from.position.adjacents()
-        let adjacentTargets = adjacentToMe.compactMap { targetPositions[$0] }
-        let sortedTargets = adjacentTargets.sorted { (lhs, rhs) -> Bool in
-            if lhs.hitPoints == rhs.hitPoints {
-                return lhs.position < rhs.position
-            }
-            return lhs.hitPoints < rhs.hitPoints
-        }
-        if let target = sortedTargets.first {
-            print("\(from) attacking \(target)")
-            target.hitPoints -= 3
-            if target.hitPoints <= 0 {
-                print("\(target) is dead removing!")
-                if let index = self.units.firstIndex(where: { $0 === target }) {
-                    self.units.remove(at: index)
-                    updateUnitPositions()
-                } else {
-                    print("============ couldn't find target, units: \(units)")
-                }
-            }
-        } else {
-            print("\(from) cannot attack")
-        }
-    }
 }
