@@ -25,7 +25,7 @@ extension AStar {
             current = nextCurrent
         }
 
-        return path
+        return path.reversed()
     }
 
     public func aStar(from start: Node, to goal: Node) -> (path: [Node], cost: Int) {

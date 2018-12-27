@@ -144,10 +144,10 @@ var testCaseOne = Cave(input: """
 """)
 print(testCaseOne.round())
 print(testCaseOne)
-print(testCaseOne.round())
-print(testCaseOne)
-print(testCaseOne.round())
-print(testCaseOne)
+//print(testCaseOne.round())
+//print(testCaseOne)
+//print(testCaseOne.round())
+//print(testCaseOne)
 
 //
 //let url = Bundle.main.url(forResource: "day15.input", withExtension: "txt")!
@@ -156,5 +156,6 @@ print(testCaseOne)
 //
 //print(day15cave.fight()) // 232505 is too high!
 //                         // 235417 is too high! (also higher than the last guess...)
+//                         // 147862 isn't right...
 
 //: [Next](@next)

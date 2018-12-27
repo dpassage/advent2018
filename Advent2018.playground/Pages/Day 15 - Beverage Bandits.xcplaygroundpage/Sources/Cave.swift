@@ -204,36 +204,26 @@ extension Cave {
     }
 
     func shortestPath(from: Point, to destination: Point) -> PathRecord? {
-        var visited: Set<Point> = []
-        var heap = Heap<PathRecord> { (left, right) -> Bool in
-            let leftScore = left.score(destination: destination)
-            let rightScore = right.score(destination: destination)
-            if leftScore == rightScore {
-                return left.path.first! < right.path.first!
-            }
-            return leftScore < rightScore
+        let result = aStar(from: from, to: destination)
+        if result.cost == -1 {
+            return nil
+        } else {
+            return PathRecord(path: result.path)
         }
-        let adjacents = from.adjacents().filter { grid.isValidIndex($0) }.filter { !isOccupied($0) }
-        for adjacent in adjacents {
-            heap.enqueue(PathRecord(path: [adjacent]))
-            visited.insert(adjacent)
-        }
+    }
+}
 
-        while let current = heap.dequeue() {
-            let last = current.path.last!
-            if last == destination {
-                return current
-            }
-            for neighbor in last.adjacents() {
-                if visited.contains(neighbor) { continue } else { visited.insert(neighbor) }
-                if grid.isValidIndex(neighbor) && (!isOccupied(neighbor)) {
-                    let newPath = PathRecord(path: current.path + [neighbor])
-                    heap.enqueue(newPath)
-                }
-            }
-        }
+extension Cave: AStar {
+    public typealias Node = Point
 
-        return nil
+    public func estimatedCost(from: Node, to: Node) -> Int {
+        return from.distance(from: to)
     }
 
+    public func neighborsOf(_ node: Node) -> [(node: Node, distance: Int)] {
+        return node.adjacents()
+            .filter { grid.isValidIndex($0) }
+            .filter { !unitPositions.keys.contains($0) }
+            .map { (node: $0, distance: 1) }
+    }
 }
