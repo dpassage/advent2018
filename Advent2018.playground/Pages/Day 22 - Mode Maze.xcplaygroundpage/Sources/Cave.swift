@@ -19,18 +19,16 @@ public struct Cave {
     var depth: Int
     var target: Point
 
-    var erosionLevels: Box<Rect<Int>>
+    var erosionLevels: Box<[Point: Int]>
     public init(depth: Int, target: Point) {
         self.depth = depth
         self.target = target
 
-        // we build it much bigger than the rectangle because paths my run past the target and come back.
-        let levelsRect = Rect(width: target.x * 2, height: target.y * 2, defaultValue: -1)
-        erosionLevels = Box(value: levelsRect)
+        erosionLevels = Box(value: [:])
     }
 
     public func erosionLevel(point: Point) -> Int {
-        if erosionLevels.value[point] != -1 { return erosionLevels.value[point] }
+        if let memoizedLevel = erosionLevels.value[point] { return memoizedLevel }
 
         let geologicIndex: Int
         switch (point.x, point.y) {
@@ -81,71 +79,69 @@ extension Cave {
         var tool: Tool
     }
 
-    struct Path {
-        var nodes: [Node]
-        var costSoFar: Int
-
-        func score(to: Point) -> Int {
-            return nodes.last!.position.distance(from: to) + costSoFar
+    func reconstructPath(cameFrom: [Node: Node], current: Node) -> [Node] {
+        var current = current
+        var path = [current]
+        while let nextCurrent = cameFrom[current] {
+            path.append(nextCurrent)
+            current = nextCurrent
         }
 
-        func moving(to: Point) -> Path {
-            let tool = nodes.last!.tool
-            var new = self
-            new.nodes.append(Node(position: to, tool: tool))
-            new.costSoFar += 1
-            return new
-        }
-
-        func changingTool(to: Tool) -> Path {
-            let position = nodes.last!.position
-            var new = self
-            new.nodes.append(Node(position: position, tool: to))
-            new.costSoFar += 7
-            return new
-        }
+        return path
     }
 
-    public func shortestPathLength() -> Int {
-        let targetNode = Node(position: target, tool: .torch)
-        var heap = Heap<Path> { (lhs, rhs) -> Bool in
-            return lhs.score(to: targetNode.position) < rhs.score(to: targetNode.position)
+    func estimatedCost(from: Node, to: Node) -> Int {
+        return from.position.distance(from: to.position)
+    }
+
+    func neighborsOf(_ node: Node) -> [(node: Node, distance: Int)] {
+        let neighbors = node.position.adjacents()
+            .filter { $0.x >= 0 && $0.y >= 0 }
+            .filter { regionType($0).validTools.contains(node.tool) }
+            .map { (node: Node(position: $0, tool: node.tool), distance: 1) }
+
+        let tools = regionType(node.position).validTools.filter({ $0 != node.tool }).map {
+            (node: Node(position: node.position, tool: $0), distance: 7)
         }
-        let firstNode = Node(position: .origin, tool: .torch)
-        var visited: Set<Node> = [firstNode]
-        let firstPath = Path(nodes: [firstNode], costSoFar: 0)
-        heap.enqueue(firstPath)
 
-        while let current = heap.dequeue() {
-            let currentNode = current.nodes.last!
-            if currentNode == targetNode {
-                print(current)
-                return current.costSoFar
-            }
+        return neighbors + tools
+    }
 
-            if currentNode.position == target {
-                let newPath = current.changingTool(to: .torch)
-                heap.enqueue(newPath)
-            }
+    func aStar(from start: Node, to goal: Node) -> (path: [Node], cost: Int) {
+        var closedSet: Set<Node> = []
+        var cameFrom: [Node: Node] = [:]
+        var gScore: [Node: Int] = [start: 0]
 
-            let currentRegion = regionType(currentNode.position)
-            let adjacents = currentNode.position.adjacents()
-                .filter { erosionLevels.value.isValidIndex($0) }
-                .filter { regionType($0).validTools.contains(currentNode.tool) }
-                .filter { !visited.contains(Node(position: $0, tool: currentNode.tool)) }
-            for adjacent in adjacents {
-                let newPath = current.moving(to: adjacent)
-                visited.insert(newPath.nodes.last!)
-                heap.enqueue(newPath)
+        var heap = Heap<(node: Node, fScore: Int)>(priorityFunction: { $0.fScore < $1.fScore })
+
+        heap.enqueue((node: start, fScore: estimatedCost(from: start, to: goal)))
+
+        while let current = heap.dequeue()?.node {
+            if current == goal {
+                let path = reconstructPath(cameFrom: cameFrom, current: current)
+                let score = gScore[current, default: Int.max]
+                return (path, score)
             }
-            for tool in currentRegion.validTools {
-                if tool != currentNode.tool {
-                    let newPath = current.changingTool(to: tool)
-                    visited.insert(newPath.nodes.last!)
-                    heap.enqueue(newPath)
+            closedSet.insert(current)
+
+            for (neighbor, distance) in neighborsOf(current) {
+                if closedSet.contains(neighbor) { continue }
+                let tentativeScore = gScore[current, default: Int.max] + distance
+                if tentativeScore > gScore[neighbor, default: Int.max] {
+                    continue
                 }
+                cameFrom[neighbor] = current
+                gScore[neighbor] = tentativeScore
+                heap.enqueue((node: neighbor, fScore: tentativeScore + estimatedCost(from: neighbor, to: goal)))
             }
         }
-        return -1
+        return (path: [], cost: -1)
+    }
+    public func shortestPathLength() -> Int {
+        let start = Node(position: .origin, tool: .torch)
+        let goal = Node(position: target, tool: .torch)
+        let result = aStar(from: start, to: goal)
+        print(result)
+        return result.cost
     }
 }
