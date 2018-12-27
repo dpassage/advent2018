@@ -54,5 +54,5 @@ print(testCave.regionType(Point(x: 2, y: 2)))
 print(testCave.shortestPathLength())
 
 let realCave = Cave(depth: 9465, target: Point(x: 13, y: 704))
-print(realCave.shortestPathLength()) // 975 too high
+print(realCave.shortestPathLength()) // 975 too high; 944 correct!
 //: [Next](@next)
