@@ -137,25 +137,22 @@ public struct Cave: CustomStringConvertible {
             .filter { grid.isValidIndex($0) }
             .filter { !isOccupied($0) }
         print("targetSquares: \(targetSquares)")
-        // for each possible move
-        //   for each target
-        //     compute shortest path
-        var paths: [PathRecord] = []
-        for target in targetSquares {
-            if let shortestPath = shortestPath(from: unit.position, to: target) {
-                paths.append(shortestPath)
-            }
-        }
+
+        // compute all distances
+        let allDistances = distances(from: unit.position)
+        let targetPaths = allDistances.filter { targetSquares.contains($0.0) }
+
         // sort by length then order of last step
 
-        let sortedPaths = paths.sorted { (lhs, rhs) -> Bool in
-            if lhs.path.count == rhs.path.count {
-                return lhs.path.last! < rhs.path.last!
+        let sortedPaths = targetPaths.sorted { (lhs, rhs) -> Bool in
+            if lhs.value == rhs.value {
+                return lhs.key < rhs.key
             }
-            return lhs.path.count < rhs.path.count
+            return lhs.value < rhs.value
         }
         print("sortedPaths are \(sortedPaths)")
-        guard let selectedTarget = sortedPaths.first?.path.last else {
+        guard let selectedTarget = sortedPaths.first?.key,
+            let selectedDistance = sortedPaths.first?.value else {
             print("no move found")
             return
         }
@@ -163,7 +160,7 @@ public struct Cave: CustomStringConvertible {
         // now we have a target, figure out what the next square is
         let startSquares = unit.position.adjacents().filter { grid.isValidIndex($0) }.filter { !isOccupied($0) }
 
-        let startPaths = startSquares.compactMap { shortestPath(from: $0, to: selectedTarget) }
+        let startPaths = startSquares.compactMap { shortestPath(from: $0, to: selectedTarget, limit: selectedDistance - 1) }
         let sortedStartPaths = startPaths.sorted { (lhs, rhs) -> Bool in
             if lhs.path.count == rhs.path.count {
                 return lhs.path.first! < rhs.path.first!
@@ -219,9 +216,9 @@ extension Cave {
         }
     }
 
-    func shortestPath(from: Point, to destination: Point) -> PathRecord? {
+    func shortestPath(from: Point, to destination: Point, limit: Int = Int.max) -> PathRecord? {
         print("computing path \(from) to \(destination)")
-        let result = aStar(from: from, to: destination)
+        let result = aStar(from: from, to: destination, limit: limit)
         if result.cost == -1 {
             return nil
         } else {
@@ -244,3 +241,5 @@ extension Cave: AStar {
             .map { (node: $0, distance: 1) }
     }
 }
+
+extension Cave: Dijkstra {}

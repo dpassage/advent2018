@@ -131,31 +131,31 @@ import AdventLib
 //""")
 //print(cornerCaseFive.fight()) // 13332
 
-var testCaseOne = Cave(input: """
-#########
-#G..G..G#
-#.......#
-#.......#
-#G..E..G#
-#.......#
-#.......#
-#G..G..G#
-#########
-""")
-print(testCaseOne.round())
-print(testCaseOne)
+//var testCaseOne = Cave(input: """
+//#########
+//#G..G..G#
+//#.......#
+//#.......#
+//#G..E..G#
+//#.......#
+//#.......#
+//#G..G..G#
+//#########
+//""")
+//print(testCaseOne.round())
+//print(testCaseOne)
 //print(testCaseOne.round())
 //print(testCaseOne)
 //print(testCaseOne.round())
 //print(testCaseOne)
 
-//
-//let url = Bundle.main.url(forResource: "day15.input", withExtension: "txt")!
-//let day15input = try! String(contentsOf: url)
-//var day15cave = Cave(input: day15input)
-//
-//print(day15cave.fight()) // 232505 is too high!
-//                         // 235417 is too high! (also higher than the last guess...)
-//                         // 147862 isn't right...
 
+let url = Bundle.main.url(forResource: "day15.input", withExtension: "txt")!
+let day15input = try! String(contentsOf: url)
+var day15cave = Cave(input: day15input)
+
+print(day15cave.fight()) // 232505 is too high!
+                         // 235417 is too high! (also higher than the last guess...)
+                         // 147862 isn't right...
+                         // 229950 was right!
 //: [Next](@next)

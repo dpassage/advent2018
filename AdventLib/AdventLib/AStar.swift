@@ -28,7 +28,7 @@ extension AStar {
         return path.reversed()
     }
 
-    public func aStar(from start: Node, to goal: Node) -> (path: [Node], cost: Int) {
+    public func aStar(from start: Node, to goal: Node, limit: Int) -> (path: [Node], cost: Int) {
         var closedSet: Set<Node> = []
         var cameFrom: [Node: Node] = [:]
         var gScore: [Node: Int] = [start: 0]
@@ -51,6 +51,7 @@ extension AStar {
                 if tentativeScore > gScore[neighbor, default: Int.max] {
                     continue
                 }
+                if tentativeScore > limit { continue }
                 cameFrom[neighbor] = current
                 gScore[neighbor] = tentativeScore
                 heap.enqueue((node: neighbor, fScore: tentativeScore + estimatedCost(from: neighbor, to: goal)))
