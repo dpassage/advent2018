@@ -9,11 +9,13 @@ class Unit: CustomStringConvertible {
     var position: Point
     var hitPoints: Int
     var kind: Kind
+    var attack: Int
 
-    init(position: Point, kind: Kind) {
+    init(position: Point, kind: Kind, attack: Int) {
         self.position = position
         self.hitPoints = 200
         self.kind = kind
+        self.attack = attack
     }
 
     var description: String {
@@ -31,12 +33,12 @@ public struct Cave: CustomStringConvertible {
     var units: [Unit] = []
     var unitPositions: [Point: Unit] = [:]
     var roundsCompleted = 0
-
+    var startingElfCount: Int = 0
     mutating func updateUnitPositions() {
         unitPositions = [Point: Unit](uniqueKeysWithValues: units.map { ($0.position, $0) })
     }
 
-    public init(input: String) {
+    public init(input: String, elfPower: Int = 3) {
         let lines = input.components(separatedBy: "\n").filter { !$0.isEmpty }
         let width = lines.map { $0.count }.max() ?? 0
         grid = Rect(width: width, height: lines.count, defaultValue: .open)
@@ -45,7 +47,9 @@ public struct Cave: CustomStringConvertible {
             for (x, char) in line.enumerated() {
                 grid[x, y] = Space(rawValue: char) ?? .open
                 if let unitKind = Unit.Kind(rawValue: char) {
-                    units.append(Unit(position: Point(x: x, y: y), kind: unitKind))
+                    let attack = unitKind == .elf ? elfPower : 3
+                    units.append(Unit(position: Point(x: x, y: y), kind: unitKind, attack: attack))
+                    startingElfCount += unitKind == .elf ? 1 : 0
                 }
             }
         }
@@ -80,7 +84,7 @@ public struct Cave: CustomStringConvertible {
 
     public mutating func fight() -> Int {
         while true {
-            print(self, roundsCompleted)
+//            print(self, roundsCompleted)
             if let finalScore = round() {
                 print(self, roundsCompleted)
                 return finalScore
@@ -89,6 +93,10 @@ public struct Cave: CustomStringConvertible {
     }
 
     public mutating func round() -> Int? {
+        if units.filter({ $0.kind == .elf }).count < startingElfCount {
+            print("o noes an elf died!")
+            return -1
+        }
         units.sort { $0.position < $1.position }
         print(units)
         for unit in units {
@@ -108,12 +116,12 @@ public struct Cave: CustomStringConvertible {
     mutating func turn(unit: Unit) -> Bool {
         print("turn for \(unit)")
         if unit.hitPoints <= 0 {
-            print("\(unit) alrady dead, skipping")
+//            print("\(unit) alrady dead, skipping")
             return true
         }
         let targets = units.filter { $0.kind != unit.kind }
         guard !targets.isEmpty else { return false }
-        print("targets are \(targets)")
+//        print("targets are \(targets)")
 
         // move
         move(unit, targets: targets)
@@ -128,7 +136,7 @@ public struct Cave: CustomStringConvertible {
         let adjacents = unit.position.adjacents()
         for target in targets {
             if adjacents.contains(target.position) {
-                print("already next to a target")
+//                print("already next to a target")
                 return
             }
         }
@@ -136,7 +144,7 @@ public struct Cave: CustomStringConvertible {
         let targetSquares = Set(targets.flatMap { $0.position.adjacents() })
             .filter { grid.isValidIndex($0) }
             .filter { !isOccupied($0) }
-        print("targetSquares: \(targetSquares)")
+//        print("targetSquares: \(targetSquares)")
 
         // compute all distances
         let allDistances = distances(from: unit.position)
@@ -150,7 +158,7 @@ public struct Cave: CustomStringConvertible {
             }
             return lhs.value < rhs.value
         }
-        print("sortedPaths are \(sortedPaths)")
+//        print("sortedPaths are \(sortedPaths)")
         guard let selectedTarget = sortedPaths.first?.key,
             let selectedDistance = sortedPaths.first?.value else {
             print("no move found")
@@ -167,7 +175,7 @@ public struct Cave: CustomStringConvertible {
             }
             return lhs.path.count < rhs.path.count
         }
-        print("sortedStartPaths are \(sortedStartPaths)")
+//        print("sortedStartPaths are \(sortedStartPaths)")
         if let nextSquare = sortedStartPaths.first?.path.first {
             print("moving to \(nextSquare)")
             unit.position = nextSquare
@@ -191,7 +199,7 @@ public struct Cave: CustomStringConvertible {
         }
         if let target = sortedTargets.first {
             print("\(from) attacking \(target)")
-            target.hitPoints -= 3
+            target.hitPoints -= from.attack
             if target.hitPoints <= 0 {
                 print("\(target) is dead removing!")
                 if let index = self.units.firstIndex(where: { $0 === target }) {

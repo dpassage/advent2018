@@ -14,9 +14,9 @@ import AdventLib
 //#######
 //"""
 //
-//var firstTestCave = Cave(input: firstTest)
+//var firstTestCave = Cave(input: firstTest, elfPower: 14)
 //print(firstTestCave)
-//print(firstTestCave.fight()) // 27730
+//print(firstTestCave.fight()) // 27730; 4988 with elfPower 15
 //
 //var secondTestCave = Cave(input: """
 //#######
@@ -148,14 +148,30 @@ import AdventLib
 //print(testCaseOne)
 //print(testCaseOne.round())
 //print(testCaseOne)
-
-
+//
+//
 let url = Bundle.main.url(forResource: "day15.input", withExtension: "txt")!
 let day15input = try! String(contentsOf: url)
-var day15cave = Cave(input: day15input)
+//var day15cave = Cave(input: day15input)
+//
+//print(day15cave.fight()) // 232505 is too high!
+//                         // 235417 is too high! (also higher than the last guess...)
+//                         // 147862 isn't right...
+//                         // 229950 was right!
 
-print(day15cave.fight()) // 232505 is too high!
-                         // 235417 is too high! (also higher than the last guess...)
-                         // 147862 isn't right...
-                         // 229950 was right!
+// part 2:
+
+var elfPower = 3
+while true {
+    var cave = Cave(input: day15input, elfPower: elfPower)
+    let result = cave.fight()
+    if result > 0 {
+        print("elfpower \(elfPower) score \(result)")
+        break
+    } else {
+        print("------------> ELF POWER_UP!!!")
+        elfPower += 1
+    }
+}
+
 //: [Next](@next)
