@@ -59,6 +59,8 @@ let day23input = try! String(contentsOf: url)
 let day23bots = day23input.components(separatedBy: "\n").compactMap(Nanobot.init)
 print(day23bots.count)
 print(inRangeOfLargest(day23bots)) // 691 is correct!
-
+let minX = day23bots.map { $0.x }.min()!
+let maxX = day23bots.map { $0.y }.max()!
+print(minX, maxX)
 
 //: [Next](@next)
