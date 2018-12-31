@@ -1,44 +1,18 @@
 import Foundation
 import AdventLib
 
-public struct Coordinate {
-    public var x: Int
-    public var y: Int
-
-    public init(x: Int, y: Int) {
-        self.x = x
-        self.y = y
-    }
-}
-
-extension Coordinate {
+extension Point {
     public init?(line: String) {
         let parts = line.components(separatedBy: ", ")
         print(parts)
         guard parts.count == 2,
             let x = Int(parts[0]),
             let y = Int(parts[1]) else { return nil }
-        self.x = x; self.y = y
-    }
-
-    static func - (lhs: Coordinate, rhs: Coordinate) -> Coordinate {
-        let x = lhs.x - rhs.x
-        let y = lhs.y - rhs.y
-        return Coordinate(x: x, y: y)
-    }
-
-    public static func + (lhs: Coordinate, rhs: Coordinate) -> Coordinate {
-        let x = lhs.x + rhs.x
-        let y = lhs.y + rhs.y
-        return Coordinate(x: x, y: y)
-    }
-
-    public func distance(to other: Coordinate) -> Int {
-        return abs(x - other.x) + abs(y - other.y)
+        self.init(x: x, y: y)
     }
 }
 
-public func findLargestArea(coordinates: [Coordinate]) -> Int {
+public func findLargestArea(coordinates: [Point]) -> Int {
     // first, we find the min and max x and y
     let minX = coordinates.map { $0.x }.min()!
     let minY = coordinates.map { $0.y }.min()!
@@ -47,7 +21,7 @@ public func findLargestArea(coordinates: [Coordinate]) -> Int {
 
     // we want to leave a 1-cell gap around the edge
     // so the origin is 1 cell above and to the left
-    let origin = Coordinate(x: minX - 1, y: minY - 1)
+    let origin = Point(x: minX - 1, y: minY - 1)
     // and the size is the difference, plus two
     let width = (maxX - minX) + 2
     let height = (maxY - minY) + 2
@@ -59,8 +33,8 @@ public func findLargestArea(coordinates: [Coordinate]) -> Int {
     // infinite extent, and so get bucketed out.
     var edgeRegionOffsets: Set<Int> = []
 
-    func nearestRegion(to normalized: Coordinate) -> Int? {
-        let distances = (coordinates.enumerated().map { (offset: $0.offset, distance: $0.element.distance(to: normalized)) })
+    func nearestRegion(to normalized: Point) -> Int? {
+        let distances = (coordinates.enumerated().map { (offset: $0.offset, distance: $0.element.distance(from: normalized)) })
 
         let sortedDistances = distances.sorted { $0.distance < $1.distance }
         if sortedDistances.count > 1 && sortedDistances[0].distance == sortedDistances[1].distance {
@@ -75,7 +49,7 @@ public func findLargestArea(coordinates: [Coordinate]) -> Int {
     for x in 0..<grid.width {
         print(x)
         for y in 0..<grid.height {
-            let normalized = Coordinate(x: x, y: y) + origin
+            let normalized = Point(x: x, y: y) + origin
             if let nearest = nearestRegion(to: normalized) {
                 // if it's an edge cell, update the edge list
                 if x == 0 || x == (width - 1) || y == 0 || y == (height - 1) {
@@ -102,7 +76,7 @@ public func findLargestArea(coordinates: [Coordinate]) -> Int {
     return counts.values.sorted { $0 > $1 }.first!
 }
 
-public func sizeOfNearbyArea(coordinates: [Coordinate], limit: Int) -> Int {
+public func sizeOfNearbyArea(coordinates: [Point], limit: Int) -> Int {
     let buffer = (limit / coordinates.count) + 1
     // first, we find the min and max x and y
     let minX = coordinates.map { $0.x }.min()!
@@ -110,7 +84,7 @@ public func sizeOfNearbyArea(coordinates: [Coordinate], limit: Int) -> Int {
     let maxX = coordinates.map { $0.x }.max()!
     let maxY = coordinates.map { $0.y }.max()!
 
-    let origin = Coordinate(x: minX - buffer, y: minY - buffer)
+    let origin = Point(x: minX - buffer, y: minY - buffer)
     // and the size is the difference, plus two
     let width = (maxX - minX) + (2 * buffer)
     let height = (maxY - minY) + (2 * buffer)
@@ -118,8 +92,8 @@ public func sizeOfNearbyArea(coordinates: [Coordinate], limit: Int) -> Int {
     var count = 0
     for x in 0..<width {
         for y in 0..<height {
-            let normalized = Coordinate(x: x, y: y) + origin
-            let totalDistance = coordinates.map { $0.distance(to: normalized) }.reduce(0, +)
+            let normalized = Point(x: x, y: y) + origin
+            let totalDistance = coordinates.map { $0.distance(from: normalized) }.reduce(0, +)
             if totalDistance < limit {
                 count += 1
             }
@@ -127,4 +101,3 @@ public func sizeOfNearbyArea(coordinates: [Coordinate], limit: Int) -> Int {
     }
     return count
 }
-

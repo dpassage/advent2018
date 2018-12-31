@@ -12,13 +12,13 @@ let testInputLines = """
 8, 9
 """.components(separatedBy: "\n")
 
-let testCoordinates = testInputLines.compactMap(Coordinate.init)
+let testCoordinates = testInputLines.compactMap(Point.init)
 
 print(findLargestArea(coordinates: testCoordinates))
 
 let url = Bundle.main.url(forResource: "day6.input", withExtension: "txt")!
 let day6lines = try! String(contentsOf: url).components(separatedBy: "\n")
-let day6coords = day6lines.compactMap(Coordinate.init)
+let day6coords = day6lines.compactMap(Point.init)
 
 //print(findLargestArea(coordinates: day6coords))
 
