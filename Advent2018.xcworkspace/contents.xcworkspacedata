@@ -2,7 +2,10 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:AdventLib/AdventLib.xcodeproj">
+      location = "group:README.md">
+   </FileRef>
+   <FileRef
+      location = "group:../AdventLib/AdventLib.xcodeproj">
    </FileRef>
    <FileRef
       location = "group:Advent2018.playground">
