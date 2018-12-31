@@ -3,35 +3,6 @@
 import Foundation
 import AdventLib
 
-struct Nanobot {
-    var x: Int
-    var y: Int
-    var z: Int
-    var radius: Int
-
-    func distance(from other: Nanobot) -> Int {
-        let xDist: Int = abs(x - other.x)
-        let yDist: Int = abs(y - other.y)
-        let zDist: Int = abs(z - other.z)
-        return xDist + yDist + zDist
-    }
-
-    static let regex = try! Regex(pattern: "pos=<(-?\\d+),(-?\\d+),(-?\\d+)>, r=(\\d+)")
-
-    init?(line: String) {
-        guard let matches = Nanobot.regex.match(input: line),
-            matches.count >= 4,
-            let x = Int(matches[0]),
-            let y = Int(matches[1]),
-            let z = Int(matches[2]),
-            let radius = Int(matches[3]) else { return nil }
-        self.x = x
-        self.y = y
-        self.z = z
-        self.radius = radius
-    }
-}
-
 let testInput = """
 pos=<0,0,0>, r=4
 pos=<1,0,0>, r=1
@@ -60,7 +31,86 @@ let day23bots = day23input.components(separatedBy: "\n").compactMap(Nanobot.init
 print(day23bots.count)
 print(inRangeOfLargest(day23bots)) // 691 is correct!
 let minX = day23bots.map { $0.x }.min()!
-let maxX = day23bots.map { $0.y }.max()!
+let maxX = day23bots.map { $0.x }.max()!
 print(minX, maxX)
+let minY = day23bots.map { $0.y }.min()!
+let maxY = day23bots.map { $0.y }.max()!
+print(minY, maxY)
+let minZ = day23bots.map { $0.z }.min()!
+let maxZ = day23bots.map { $0.z }.max()!
+print(minZ, maxZ)
+
+
+
+struct SearchResult {
+    var cube: Cube
+    var botsOverlapped: Int
+    var size: Int { return cube.size }
+    var distanceFromOrigin: Int { return cube.corners().map { $0.distance(from: .origin) }.min() ?? Int.max }
+
+    init(cube: Cube, bots: [Nanobot]) {
+        self.cube = cube
+        self.botsOverlapped = bots.filter { cube.overlaps(bot: $0) }.count
+    }
+}
+
+extension SearchResult: Equatable {}
+
+extension SearchResult {
+    func betterThan(_ other: SearchResult) -> Bool {
+        let this = [botsOverlapped, -size, -distanceFromOrigin]
+        let otherNums = [other.botsOverlapped, -other.size, -other.distanceFromOrigin]
+        return this > otherNums
+    }
+}
+struct Formation {
+    var bots: [Nanobot]
+
+    func findBestCoord() -> Coord? {
+        var heap = Heap<SearchResult> { (first, second) -> Bool in
+            return first.betterThan(second)
+        }
+
+        let firstCube = Cube.maximal
+        let firstResult = SearchResult(cube: firstCube, bots: bots)
+        heap.enqueue(firstResult)
+        while let current = heap.dequeue() {
+            print(current.size, current.botsOverlapped, current.cube.corners())
+            if current.size == 1 {
+                return current.cube.corners().first!
+            }
+            for newCube in current.cube.partition() {
+                let newResult = SearchResult(cube: newCube, bots: bots)
+                heap.enqueue(newResult)
+            }
+        }
+        return nil
+    }
+}
+
+let part2input = """
+pos=<10,12,12>, r=2
+pos=<12,14,12>, r=2
+pos=<16,12,12>, r=4
+pos=<14,14,14>, r=6
+pos=<50,50,50>, r=200
+pos=<10,10,10>, r=5
+"""
+
+let bigBot = Nanobot(line: "pos=<50,50,50>, r=200")!
+let cube = Cube(xRange: 0..<13, yRange: 0..<13, zRange: 0..<13)
+print(cube.overlaps(bot: bigBot))
+let part2bots = part2input.components(separatedBy: "\n").compactMap(Nanobot.init)
+for bot in part2bots {
+    print(bot, cube.overlaps(bot: bot))
+}
+print(cube.corners())
+let testFormation = Formation(bots: part2bots)
+print(testFormation.findBestCoord())
+
+let realFormation = Formation(bots: day23bots)
+let result = realFormation.findBestCoord()!
+print(result)
+print(result.distance(from: .origin))
 
 //: [Next](@next)
