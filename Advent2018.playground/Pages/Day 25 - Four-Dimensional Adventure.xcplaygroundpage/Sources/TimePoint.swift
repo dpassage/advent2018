@@ -59,7 +59,7 @@ public struct SpaceTime {
 
     public mutating func fullyReduce() {
         while true {
-            var before = constellations.count
+            let before = constellations.count
             reduce()
             if constellations.count == before { return }
         }
